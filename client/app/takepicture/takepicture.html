@@ -1,0 +1,21 @@
+<div ng-include="'components/navbar/navbar.html'"></div>
+
+<header class="hero-unit" id="banner">
+	<h1>Take a picture</h1>
+</header>
+<div class="col-md-12">
+This is the takepicture view.
+</div>
+
+<div class="container">
+<video autoplay></video>
+
+<canvas id="c"></canvas>
+
+</div>
+
+ 
+
+    <div id="webcamcontrols" class="container">
+        <button class="btn recordbutton" ng-click="takePicture()">Take !</button>
+    </div>
