@@ -15,3 +15,7 @@ angular.module('quickCooking2App', [
 
     $locationProvider.html5Mode(true);
   });
+
+
+
+  

@@ -73,11 +73,13 @@ angular.module('quickCooking2App')
         	var v = $("video")[0];
 
 
+        	$("#c").attr("width", v.videoWidth).attr("height", v.videoHeight);
+
 		    var canvas = $('#c')[0];
 		    var context = canvas.getContext('2d');
 
-		    var cw = canvas.width;
-		    var ch = canvas.height
+		    var cw = v.videoWidth;
+		    var ch = v.videoHeight;
 
 			/*v.addEventListener('play', function(){
 			        draw(v,context,cw,ch);
@@ -86,7 +88,12 @@ angular.module('quickCooking2App')
 			//function draw(v,c,w,h) {
 			  //  if(v.paused || v.ended) return false;
 		    context.drawImage(v,0,0,cw,ch);
-		    window.location=canvas.toDataURL("image/png");
+
+  			var data1=OCRAD(canvas);
+  			$scope.reco = data1;
+  			console.log(data1);
+
+		    //window.location=canvas.toDataURL("image/png");
 			    //setTimeout(draw,20,v,c,w,h);
 			//}
         }

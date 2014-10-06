@@ -3,6 +3,13 @@
 <header class="hero-unit" id="banner">
 	<h1>Take a picture</h1>
 </header>
+
+    <div id="webcamcontrols" class="container">
+        <button class="btn recordbutton" ng-click="takePicture()">Take !</button>
+    </div>
+
+<p>Recognized: {{reco}}</p>
+
 <div class="col-md-12">
 This is the takepicture view.
 </div>
@@ -16,6 +23,3 @@ This is the takepicture view.
 
  
 
-    <div id="webcamcontrols" class="container">
-        <button class="btn recordbutton" ng-click="takePicture()">Take !</button>
-    </div>
