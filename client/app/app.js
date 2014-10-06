@@ -10,7 +10,7 @@ angular.module('quickCooking2App', [
   .config(function ($routeProvider, $locationProvider) {
     $routeProvider
       .otherwise({
-        redirectTo: '/'
+        redirectTo: '/takepicture'
       });
 
     $locationProvider.html5Mode(true);
@@ -18,4 +18,3 @@ angular.module('quickCooking2App', [
 
 
 
-  
