@@ -15,7 +15,7 @@
     "lodash": "~4.17.5",
     "ejs": "~2.5.5",
     "composable-middleware": "^0.3.0",
-    "connect-mongo": "^0.5.2",
+    "connect-mongo": "^3.0.0",
     "snyk": "^1.90.0"
   },
   "devDependencies": {
