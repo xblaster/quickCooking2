@@ -16,7 +16,7 @@
     "ejs": "~2.5.5",
     "composable-middleware": "^0.3.0",
     "connect-mongo": "^0.5.2",
-    "snyk": "^1.90.0"
+    "snyk": "^1.317.0"
   },
   "devDependencies": {
     "grunt": "~0.4.4",
