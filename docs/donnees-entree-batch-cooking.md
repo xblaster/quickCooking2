@@ -18,7 +18,7 @@ rien, il **affiche**, **contrôle** et **recueille les choix** de la famille.
 1. Tu envoies **un seul document JSON** (l'« export ») avec six sections : `foyer`, `preferences`,
    `stocks`, `periode_courante`, `periode_a_venir`, `recettes`. Tu peux aussi n'envoyer qu'une section.
 2. **Période courante** = le menu décidé en cours (lecture seule pour la famille) + les courses.
-   **Période à venir** = 1 à 3 propositions par repas ; la famille choisit ou remplace.
+   **Période à venir** = 1 à 5 propositions par repas (5 conseillées) ; la famille choisit ou remplace.
 3. Tu relis les **choix** de la famille (`GET /api/choix`) avant d'arrêter le menu de la période à venir
    (Temps 2 de ton skill).
 4. Les **stocks** portent les produits **à consommer absolument** (date limite proche, produit frais
@@ -264,7 +264,7 @@ avec les stocks). `convives` : une clé par personne présente, valeur = lieu (`
   "defaut": null }
 ```
 
-- 1 à 3 `options`, la première est la recommandation. Chaque `ref` doit exister dans `recettes`.
+- 1 à 5 `options` (5 conseillées, variées : complet, végé, poisson, rapide, nouveauté), la première est la recommandation. Chaque `ref` doit exister dans `recettes`.
 - `pourquoi` : une ligne, pour la famille (pas de jargon du collège).
 - Repas non négociable (jeudi soir poulet, etc.) : `"impose": { "nom": "Poulet rôti du rôtisseur", "raison": "Danse de Grégoire à 19 h" }` à la place de `options`.
 - `defaut` : `ref` présélectionnée (facultatif).
@@ -378,7 +378,7 @@ Ensuite : Temps 2 de ton skill (fiche semaine, courses), puis envoi de la nouvel
 - [ ] `format` = `quick-cooking/export`, `version` = 1, `genere_le` à l'heure de l'envoi.
 - [ ] Chaque `ref` (plats, options, imposés, défaut) existe dans `recettes`.
 - [ ] Chaque jour a une `date` ; chaque repas un `jour` existant, un `moment`, des `convives`.
-- [ ] Période à venir : 1 à 3 `options` par repas non imposé, la recommandation en premier.
+- [ ] Période à venir : 1 à 5 `options` (5 conseillées) par repas non imposé, la recommandation en premier.
 - [ ] Les articles de stock ont des `mots` ; les produits frais ont `entre_le` et `perissable` ; les
       `dlc` sont celles lues sur les emballages, jamais estimées.
 - [ ] Les produits à consommer absolument sont couverts par un repas prévu avant leur échéance,

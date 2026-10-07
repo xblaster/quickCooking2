@@ -1,7 +1,7 @@
 {
  "format": "quick-cooking/export",
  "version": 1,
- "genere_le": "2026-10-07T20:25:23+02:00",
+ "genere_le": "2026-10-07T21:54:05+02:00",
  "source": "quick-cooking/outils/construire_exemple.py (exemple)",
  "foyer": {
   "personnes": [
@@ -2504,7 +2504,7 @@
     "besoin": "",
     "options": [
      {
-      "ref": "08_Diners_Apres_Boulot/Saint_Jacques_Legumes",
+      "ref": "03_Express_Simplissime/Poke_Bowl_Boeuf_Mangue",
       "pourquoi": "Recommandation : plat complet de saison"
      },
      {
@@ -2512,7 +2512,15 @@
       "pourquoi": "Variante végétarienne"
      },
      {
-      "ref": "03_Express_Simplissime/Poke_Bowl_Boeuf_Mangue",
+      "ref": "06_Cookeo_Plats_du_Soir/Waterzoi_de_Saumon_et_Basilic",
+      "pourquoi": "Poisson"
+     },
+     {
+      "ref": "10_Cookeo_OnePot/Quinoa_a_la_Mexicaine",
+      "pourquoi": "Rapide : 30 min ou moins"
+     },
+     {
+      "ref": "03_Express_Simplissime/Rouleaux_Oeufs_Brouilles_Soja",
       "pourquoi": "Jamais cuisinée : pour changer"
      }
     ]
@@ -2537,7 +2545,15 @@
       "pourquoi": "Variante végétarienne"
      },
      {
+      "ref": "06_Cookeo_Plats_du_Soir/Saumon_Grille_Salsa_Mangue_et_Riz_Coco",
+      "pourquoi": "Poisson"
+     },
+     {
       "ref": "08_Diners_Apres_Boulot/Emince_Boeuf_Legumes",
+      "pourquoi": "Rapide : 30 min ou moins"
+     },
+     {
+      "ref": "11_On_Mange_Quoi_Ce_Soir/Tortilla_Chorizo_Poivrons_Rouges",
       "pourquoi": "Jamais cuisinée : pour changer"
      }
     ]
@@ -2562,7 +2578,15 @@
       "pourquoi": "Variante végétarienne"
      },
      {
+      "ref": "11_On_Mange_Quoi_Ce_Soir/Salade_Haricots_Verts_Nicoise",
+      "pourquoi": "Poisson"
+     },
+     {
       "ref": "11_On_Mange_Quoi_Ce_Soir/Patotto_Courgettes_Tomates_Sechees_Chorizo",
+      "pourquoi": "Rapide : 30 min ou moins"
+     },
+     {
+      "ref": "07_Simplissime_Veggie/Couscous_Paprika_Quinoa",
       "pourquoi": "Jamais cuisinée : pour changer"
      }
     ]
@@ -2597,11 +2621,19 @@
       "pourquoi": "Recommandation : plat complet de saison"
      },
      {
-      "ref": "03_Express_Simplissime/Rouleaux_Oeufs_Brouilles_Soja",
+      "ref": "06_Cookeo_Plats_du_Soir/Salade_Brocoli_Quinoa_Feta_Citron",
       "pourquoi": "Variante végétarienne"
      },
      {
+      "ref": "03_Express_Simplissime/Salade_Pates_Thon_Mozza_Pesto",
+      "pourquoi": "Poisson"
+     },
+     {
       "ref": "10_Cookeo_OnePot/Salade_Tofu_Pois_Gourmands_Coreenne",
+      "pourquoi": "Rapide : 30 min ou moins"
+     },
+     {
+      "ref": "05_Cakes_et_Flans/Cake_Saumon_Brocoli",
       "pourquoi": "Jamais cuisinée : pour changer"
      }
     ]
@@ -2641,6 +2673,14 @@
      },
      {
       "ref": "11_On_Mange_Quoi_Ce_Soir/Thon_Mi_Cuit_Brochettes_Indoor_Poivrons_Pignons",
+      "pourquoi": "Poisson"
+     },
+     {
+      "ref": "06_Cookeo_Plats_du_Soir/Chili_Con_Carne_et_Quinoa",
+      "pourquoi": "Rapide : 30 min ou moins"
+     },
+     {
+      "ref": "03_Express_Simplissime/Boeuf_Saute_Champignons_Epinards",
       "pourquoi": "Jamais cuisinée : pour changer"
      }
     ]
@@ -2665,7 +2705,15 @@
       "pourquoi": "Variante végétarienne"
      },
      {
+      "ref": "11_On_Mange_Quoi_Ce_Soir/Pates_Thon_Huile_Tomates_Olives",
+      "pourquoi": "Poisson"
+     },
+     {
       "ref": "07_Simplissime_Veggie/Pates_Citron_Olives_Fenouil",
+      "pourquoi": "Rapide : 30 min ou moins"
+     },
+     {
+      "ref": "09_Simplissime_Petit_Budget/Boulettes_a_la_Provencale_Express",
       "pourquoi": "Jamais cuisinée : pour changer"
      }
     ]
@@ -2688,6 +2736,14 @@
      {
       "ref": "07_Simplissime_Veggie/Spaghettis_Bolognaise_Tofu",
       "pourquoi": "Variante végétarienne"
+     },
+     {
+      "ref": "06_Cookeo_Plats_du_Soir/Semoule_Verte_au_Pesto_d_Herbes",
+      "pourquoi": "Poisson"
+     },
+     {
+      "ref": "07_Simplissime_Veggie/Tortellinis_Aux_Legumes_Verts",
+      "pourquoi": "Rapide : 30 min ou moins"
      },
      {
       "ref": "11_On_Mange_Quoi_Ce_Soir/Pates_Citron_Basilic_Mozzarella",
@@ -2713,6 +2769,18 @@
      {
       "ref": "07_Simplissime_Veggie/Soupe_Miso_Au_Sarrasin",
       "pourquoi": "Variante végétarienne"
+     },
+     {
+      "ref": "05_Cakes_et_Flans/Cake_Thon_Oignon_Poivrons",
+      "pourquoi": "Poisson"
+     },
+     {
+      "ref": "10_Cookeo_OnePot/Kung_Pao_au_Tofu",
+      "pourquoi": "Rapide : 30 min ou moins"
+     },
+     {
+      "ref": "10_Cookeo_OnePot/Gumbo_de_Crevettes_a_la_Creole",
+      "pourquoi": "Jamais cuisinée : pour changer"
      }
     ]
    },
@@ -2736,6 +2804,14 @@
       "pourquoi": "Variante végétarienne"
      },
      {
+      "ref": "11_On_Mange_Quoi_Ce_Soir/Saumon_Marine_Sirop_Erable_Tagliatelle_Poireaux",
+      "pourquoi": "Poisson"
+     },
+     {
+      "ref": "11_On_Mange_Quoi_Ce_Soir/Pates_Chipo_et_Broco",
+      "pourquoi": "Rapide : 30 min ou moins"
+     },
+     {
       "ref": "07_Simplissime_Veggie/Potimarrons_Farcis_Tofu_Fume",
       "pourquoi": "Jamais cuisinée : pour changer"
      }
@@ -2753,7 +2829,7 @@
     "besoin": "",
     "options": [
      {
-      "ref": "10_Cookeo_OnePot/Gumbo_de_Crevettes_a_la_Creole",
+      "ref": "11_On_Mange_Quoi_Ce_Soir/Filets_Cabillaud_Legumes_Minceur_Papillote",
       "pourquoi": "Recommandation : plat complet de saison"
      },
      {
@@ -2761,7 +2837,15 @@
       "pourquoi": "Variante végétarienne"
      },
      {
-      "ref": "11_On_Mange_Quoi_Ce_Soir/Pates_Thon_Huile_Tomates_Olives",
+      "ref": "11_On_Mange_Quoi_Ce_Soir/Saumon_Ecailles_Chorizo_Aubergines_Grillees",
+      "pourquoi": "Poisson"
+     },
+     {
+      "ref": "07_Simplissime_Veggie/Salade_Pois_Chiches_Avocats",
+      "pourquoi": "Rapide : 30 min ou moins"
+     },
+     {
+      "ref": "11_On_Mange_Quoi_Ce_Soir/Pizza_Maison",
       "pourquoi": "Jamais cuisinée : pour changer"
      }
     ]
@@ -2786,7 +2870,15 @@
       "pourquoi": "Variante végétarienne"
      },
      {
-      "ref": "05_Cakes_et_Flans/Cake_Thon_Oignon_Poivrons",
+      "ref": "03_Express_Simplissime/Tataki_Saumon_Quinoa",
+      "pourquoi": "Poisson"
+     },
+     {
+      "ref": "11_On_Mange_Quoi_Ce_Soir/Croque_Monsieur_Vache_qui_rit",
+      "pourquoi": "Rapide : 30 min ou moins"
+     },
+     {
+      "ref": "10_Cookeo_OnePot/Salade_Sarrasin_Courgettes_Pois_Chiches",
       "pourquoi": "Jamais cuisinée : pour changer"
      }
     ]
@@ -2811,8 +2903,16 @@
       "pourquoi": "Variante végétarienne"
      },
      {
-      "ref": "11_On_Mange_Quoi_Ce_Soir/Pates_Chipo_et_Broco",
+      "ref": "11_On_Mange_Quoi_Ce_Soir/Salade_Pates_Aubergines_Gorgonzola",
+      "pourquoi": "Rapide : 30 min ou moins"
+     },
+     {
+      "ref": "07_Simplissime_Veggie/Quiche_Chevre_Roquette_Comte",
       "pourquoi": "Jamais cuisinée : pour changer"
+     },
+     {
+      "ref": "09_Simplissime_Petit_Budget/Poulet_Basquaise",
+      "pourquoi": "Autre idée de saison"
      }
     ]
    }

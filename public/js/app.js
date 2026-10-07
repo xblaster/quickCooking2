@@ -388,8 +388,7 @@ function carteChoixRepas(p, r, evalu, ouvert) {
       <button type="button" class="option-bouton" data-action="choisir" data-repas="${esc(r.id)}" data-ref="${esc(o.ref)}" data-origine="option" aria-pressed="${choisi}" ${ouvert ? "" : "disabled"}>
         <span class="rond" aria-hidden="true"></span>
         <span class="option-texte"><span class="plat-nom">${esc(rec.nom)}${i === 0 ? ' <span class="badge reco">recommandé</span>' : ""}</span>
-          <span class="pourquoi">${esc(o.pourquoi ?? "")}</span>
-          <span class="option-meta">${badges(rec)}${chiffres(rec)}</span>
+          <span class="option-meta">${o.pourquoi ? `<span class="pourquoi">${esc(o.pourquoi)}</span>` : ""}${badges(rec)}${chiffres(rec)}</span>
           ${al.length ? `<span class="option-alerte niv-${pire(al)}">${SYMBOLE[pire(al)]} ${esc(al[0].texte)}</span>` : ""}
         </span>
       </button>

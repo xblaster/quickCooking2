@@ -6,7 +6,7 @@ Site familial (`https://quick-cooking.lo2k.net`) pour :
   de protéines), fiche de chaque recette ;
 - **faire les courses** : à vérifier à la maison, achats par passage en magasin, déjà à la maison
   (cases à cocher mémorisées sur l'appareil) ;
-- **choisir la période à venir** : pour chaque repas, 1 à 3 propositions du projet « batch cooking »,
+- **choisir la période à venir** : pour chaque repas, 1 à 5 propositions du projet « batch cooking »,
   ou un remplacement cherché dans toute la base de recettes (filtres type, temps, appareil,
   protéines, saison, froid, jamais cuisinée, coups de cœur), portion et remarque ; contrôles
   d'équilibre en direct ; bouton « On a fini de choisir ».

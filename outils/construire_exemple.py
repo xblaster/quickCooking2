@@ -190,6 +190,9 @@ def ecart_ok(r, convives, moment):
         return False
     if moment == "soir" and r["macros"]["prot"] > 40:
         return False
+    # Chiffres douteux (même seuil que KCAL_DOUTEUX côté site) : jamais proposés.
+    if r["macros"]["kcal"] > 1500:
+        return False
     # Pas de dessert, d'en-cas ni de base comme repas principal.
     if r["macros"]["prot"] < 8 or r["categorie"].startswith("02_") or (r["type_plat"] or "").startswith("Snack"):
         return False
@@ -199,18 +202,25 @@ def ecart_ok(r, convives, moment):
 
 
 def choisir_options(recettes, repas, deja):
-    """Trois options déterministes et variées (une viande/poisson, une végé, une libre)."""
+    """Cinq options déterministes et variées (complet, végé, poisson, rapide, nouveauté), complétées au besoin."""
     candidats = [r for r in recettes if ecart_ok(r, repas["convives"], repas["moment"]) and r["ref"] not in deja]
-    if repas["moment"] == "soir" and repas["jour"].startswith("dim"):
-        candidats = [r for r in candidats if r["drapeaux"]["soupe"]] or candidats
     cle = lambda r: hashlib.md5((repas["id"] + r["ref"]).encode()).hexdigest()  # noqa: E731
     candidats.sort(key=cle)
+    if repas["moment"] == "soir" and repas["jour"].startswith("dim"):
+        # Dimanche soir : soupes en tête, autres plats pour compléter les cinq options.
+        candidats.sort(key=lambda r: not r["drapeaux"]["soupe"])
     choix = []
     for filtre, pourquoi in (
         (lambda r: r["drapeaux"]["type"] != "vege", "Recommandation : plat complet de saison"),
         (lambda r: r["drapeaux"]["type"] == "vege", "Variante végétarienne"),
+        (lambda r: r["drapeaux"]["type"] == "poisson", "Poisson"),
+        (lambda r: 0 < (r["temps"].get("total") or 0) <= 30, "Rapide : 30 min ou moins"),
         (lambda r: not r["historique"]["deja_cuisinee"], "Jamais cuisinée : pour changer"),
+        (lambda r: True, "Autre idée de saison"),
+        (lambda r: True, "Autre idée de saison"),
     ):
+        if len(choix) == 5:
+            break
         r = next((r for r in candidats if filtre(r) and r not in choix), None)
         if r:
             choix.append(r)

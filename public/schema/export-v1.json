@@ -170,7 +170,7 @@
               "besoin": { "type": "string" },
               "defaut": { "type": ["string", "null"] },
               "options": {
-                "type": "array", "maxItems": 3,
+                "type": "array", "maxItems": 5,
                 "items": {
                   "type": "object", "required": ["ref"],
                   "properties": { "ref": { "type": "string" }, "pourquoi": { "type": "string" }, "etiquette": { "type": "string" } }
