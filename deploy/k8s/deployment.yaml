@@ -30,7 +30,7 @@ spec:
       containers:
         - name: quick-cooking
           # Tag daté AAAAMMJJ-<sha7> poussé par la CI. JAMAIS :latest.
-          image: xblaster/quick-cooking:20261007-57f30e6
+          image: xblaster/quick-cooking:20261007-efcc0d2
           ports:
             - name: http
               containerPort: 80
