@@ -1,6 +1,6 @@
 // Serveur HTTP de Quick Cooking : fichiers statiques de public/ + API JSON. Aucune dépendance.
 import { createHash, timingSafeEqual } from "node:crypto";
-import { readFile } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
 import http from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -274,15 +274,41 @@ async function api(req, res, url) {
   return json(res, 404, { erreur: "Route inconnue." });
 }
 
+// Version des fichiers statiques : JS et CSS sont servis sous /v/<version>/…, cachés longtemps.
+// Cloudflare impose un cache navigateur de 2 h aux .js : une nouvelle version change donc d'URL.
+let versionStatique = null;
+async function version() {
+  if (versionStatique) return versionStatique;
+  const h = createHash("sha256");
+  const fichiers = (await readdir(PUBLIC, { recursive: true, withFileTypes: true })).filter((f) => f.isFile());
+  for (const f of fichiers.map((f) => path.join(f.parentPath ?? f.path, f.name)).sort()) h.update(f).update(await readFile(f));
+  return (versionStatique = h.digest("hex").slice(0, 10));
+}
+
 async function statique(req, res, url) {
   if (req.method !== "GET" && req.method !== "HEAD") return envoyer(res, 405, "Méthode non autorisée");
-  const rel = url.pathname === "/" ? "index.html" : decodeURIComponent(url.pathname).replace(/^\/+/, "");
+  const v = await version();
+  let chemin = url.pathname;
+  let cache = "no-cache";
+  const versionne = chemin.match(/^\/v\/([0-9a-f]{1,40})(\/.*)$/);
+  if (versionne) {
+    chemin = versionne[2];
+    // Une ancienne version demandée reçoit le contenu actuel, sans cache.
+    cache = versionne[1] === v ? "public, max-age=31536000, immutable" : "no-store";
+  }
+  if (chemin === "/" || chemin === "/index.html") {
+    const html = (await readFile(path.join(PUBLIC, "index.html"), "utf8"))
+      .replace('href="style.css"', `href="/v/${v}/style.css"`)
+      .replace('src="js/app.js"', `src="/v/${v}/js/app.js"`);
+    return envoyer(res, 200, req.method === "HEAD" ? "" : html, { "Content-Type": TYPES[".html"], "Cache-Control": "no-cache" });
+  }
+  const rel = decodeURIComponent(chemin).replace(/^\/+/, "");
   const fichier = path.resolve(PUBLIC, rel);
   if (!fichier.startsWith(PUBLIC + path.sep)) return envoyer(res, 404, "Introuvable");
   try {
     const contenu = await readFile(fichier);
     const type = TYPES[path.extname(fichier)] || "application/octet-stream";
-    return envoyer(res, 200, req.method === "HEAD" ? "" : contenu, { "Content-Type": type, "Cache-Control": "no-cache" });
+    return envoyer(res, 200, req.method === "HEAD" ? "" : contenu, { "Content-Type": type, "Cache-Control": cache });
   } catch {
     return envoyer(res, 404, "Introuvable");
   }

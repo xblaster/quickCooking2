@@ -368,8 +368,9 @@ def periode_a_venir(recettes):
         semaine = date.fromisoformat(j["date"]).weekday() < 5 and not j["id"].startswith("mer")
         for moment in ("midi", "soir"):
             convives = {"J": "bc", "P": "m", "G": "c"} if (moment == "midi" and semaine) else {"J": "m", "P": "m", "G": "m"}
-            if j["id"] == "ven9" and moment == "midi":
-                convives = {"J": "bc", "P": "bf", "G": "c"}
+            # Règle du 2026-10-07 : J déjeune à la maison avec P le mardi et le vendredi (bureau le jeudi).
+            if moment == "midi" and j["id"][:3] in ("mar", "ven"):
+                convives = {"J": "m", "P": "m", "G": "c"}
             rep = {"id": f"{j['id']}-{moment[0]}", "jour": j["id"], "moment": moment, "convives": convives}
             if j["id"] == "jeu8" and moment == "soir":
                 rep["impose"] = {"nom": "Poulet rôti du rôtisseur", "raison": "Jeudi soir : danse de Grégoire à 19 h"}

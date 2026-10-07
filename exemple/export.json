@@ -1,7 +1,7 @@
 {
  "format": "quick-cooking/export",
  "version": 1,
- "genere_le": "2026-10-07T21:54:05+02:00",
+ "genere_le": "2026-10-07T22:29:26+02:00",
  "source": "quick-cooking/outils/construire_exemple.py (exemple)",
  "foyer": {
   "personnes": [
@@ -165,833 +165,653 @@
  },
  "stocks": {
   "mis_a_jour_le": {
-   "frigo": "2026-09-29",
+   "frigo": "2026-10-07",
    "congelateur": "2026-09-16",
    "cellier": "2026-09-29"
   },
   "articles": [
    {
     "id": "frigo-0",
-    "nom": "Œufs frais bio",
+    "nom": "Œufs",
     "lieu": "frigo",
-    "categorie": "Œufs & Charcuterie fraîche",
-    "quantite": "34 à 36 œufs (3 boîtes neuves de 10 + reste boîte ~4-6)",
-    "note": "🟢 Stock très confortable",
+    "categorie": "Œufs",
+    "quantite": "nombre inconnu",
+    "note": "Entrevus en haut à gauche — voir À vérifier",
     "prioritaire": false,
     "mots": [
      "oeuf"
     ],
-    "entre_le": "2026-09-29",
-    "perissable": true,
+    "entre_le": "2026-10-07",
+    "perissable": false,
     "dlc": null,
     "a_consommer": null
    },
    {
     "id": "frigo-1",
-    "nom": "Jambon blanc sans nitrite",
+    "nom": "Gouda en tranches",
     "lieu": "frigo",
-    "categorie": "Œufs & Charcuterie fraîche",
+    "categorie": "Fromages & Matières grasses",
     "quantite": "1 paquet",
-    "note": "Prêt pour lunchbox / wraps / repas express",
+    "note": null,
     "prioritaire": false,
     "mots": [
-     "jambon"
+     "gouda"
     ],
-    "entre_le": "2026-09-29",
-    "perissable": true,
+    "entre_le": "2026-10-07",
+    "perissable": false,
     "dlc": null,
     "a_consommer": null
    },
    {
     "id": "frigo-2",
-    "nom": "Jambon cuit à l'os",
+    "nom": "Mimolette en tranches",
     "lieu": "frigo",
-    "categorie": "Œufs & Charcuterie fraîche",
+    "categorie": "Fromages & Matières grasses",
     "quantite": "1 paquet",
-    "note": "Prêt à l'emploi",
+    "note": "Tranches (confirmé)",
     "prioritaire": false,
     "mots": [
-     "jambon"
+     "mimolette"
     ],
-    "entre_le": "2026-09-29",
-    "perissable": true,
+    "entre_le": "2026-10-07",
+    "perissable": false,
     "dlc": null,
     "a_consommer": null
    },
    {
     "id": "frigo-3",
-    "nom": "Comté en bloc",
+    "nom": "Pointe de fromage à croûte",
     "lieu": "frigo",
-    "categorie": "Fromages & Produits laitiers",
-    "quantite": "1 bloc (Drive)",
-    "note": "Neuf",
+    "categorie": "Fromages & Matières grasses",
+    "quantite": "1 pointe",
+    "note": "Comté ou Parmigiano — voir À vérifier",
     "prioritaire": false,
     "mots": [
-     "comte"
+     "pointe"
     ],
-    "entre_le": "2026-09-29",
+    "entre_le": "2026-10-07",
     "perissable": false,
     "dlc": null,
     "a_consommer": null
    },
    {
     "id": "frigo-4",
-    "nom": "Mimolette jeune",
+    "nom": "Fromage sous film vert",
     "lieu": "frigo",
-    "categorie": "Fromages & Produits laitiers",
-    "quantite": "2 blocs (700 g) (Drive)",
-    "note": "Neufs",
+    "categorie": "Fromages & Matières grasses",
+    "quantite": "1",
+    "note": "Non identifié",
     "prioritaire": false,
     "mots": [
-     "mimolette"
+     "fromage"
     ],
-    "entre_le": "2026-09-29",
+    "entre_le": "2026-10-07",
     "perissable": false,
     "dlc": null,
     "a_consommer": null
    },
    {
     "id": "frigo-5",
-    "nom": "Gouda en tranches",
+    "nom": "St Môret",
     "lieu": "frigo",
-    "categorie": "Fromages & Produits laitiers",
-    "quantite": "2 paquets",
-    "note": "Neufs / intacts",
+    "categorie": "Fromages & Matières grasses",
+    "quantite": "1 barquette",
+    "note": null,
     "prioritaire": false,
     "mots": [
-     "gouda"
+     "st moret"
     ],
-    "entre_le": "2026-09-29",
+    "entre_le": "2026-10-07",
     "perissable": false,
     "dlc": null,
     "a_consommer": null
    },
    {
     "id": "frigo-6",
-    "nom": "St Môret",
+    "nom": "La Vache qui rit",
     "lieu": "frigo",
-    "categorie": "Fromages & Produits laitiers",
-    "quantite": "2 barquettes (600 g) (1 frigo + 1 Drive)",
-    "note": "En stock",
+    "categorie": "Fromages & Matières grasses",
+    "quantite": "1 boîte",
+    "note": null,
     "prioritaire": false,
     "mots": [
-     "st moret"
+     "vache qui rit"
     ],
-    "entre_le": "2026-09-29",
+    "entre_le": "2026-10-07",
     "perissable": false,
     "dlc": null,
     "a_consommer": null
    },
    {
     "id": "frigo-7",
-    "nom": "Chèvre frais",
+    "nom": "La Vache qui rit Pik & Croq (probable)",
     "lieu": "frigo",
-    "categorie": "Fromages & Produits laitiers",
-    "quantite": "1 pot",
-    "note": "Intact",
+    "categorie": "Fromages & Matières grasses",
+    "quantite": "1 boîte",
+    "note": null,
     "prioritaire": false,
     "mots": [
-     "chevre"
+     "vache qui rit"
     ],
-    "entre_le": "2026-09-29",
+    "entre_le": "2026-10-07",
     "perissable": false,
     "dlc": null,
     "a_consommer": null
    },
    {
     "id": "frigo-8",
-    "nom": "Parmigiano Reggiano DOP",
+    "nom": "Bâtonnets de fromage « protéines »",
     "lieu": "frigo",
-    "categorie": "Fromages & Produits laitiers",
-    "quantite": "1 pointe (+ 1 sachet sous vide dessous)",
-    "note": "Neuf / intact",
+    "categorie": "Fromages & Matières grasses",
+    "quantite": "1 boîte",
+    "note": "Nouveau",
     "prioritaire": false,
     "mots": [
-     "parmesan"
+     "batonnet"
     ],
-    "entre_le": "2026-09-29",
+    "entre_le": "2026-10-07",
     "perissable": false,
     "dlc": null,
     "a_consommer": null
    },
    {
     "id": "frigo-9",
-    "nom": "Emmental râpé / portions bio",
+    "nom": "Halloumi / fromage à griller (probable)",
     "lieu": "frigo",
-    "categorie": "Fromages & Produits laitiers",
-    "quantite": "1 sachet",
-    "note": "Intact",
+    "categorie": "Fromages & Matières grasses",
+    "quantite": "1 paquet",
+    "note": null,
     "prioritaire": false,
     "mots": [
-     "emmental"
+     "halloumi"
     ],
-    "entre_le": "2026-09-29",
+    "entre_le": "2026-10-07",
     "perissable": false,
     "dlc": null,
     "a_consommer": null
    },
    {
     "id": "frigo-10",
-    "nom": "Halloumi / Fromage à griller",
+    "nom": "Crème fraîche entière fluide",
     "lieu": "frigo",
-    "categorie": "Fromages & Produits laitiers",
-    "quantite": "1 paquet",
-    "note": "Intact",
+    "categorie": "Fromages & Matières grasses",
+    "quantite": "1 bouteille",
+    "note": "Nouveau",
     "prioritaire": false,
     "mots": [
-     "halloumi"
+     "creme"
     ],
-    "entre_le": "2026-09-29",
+    "entre_le": "2026-10-07",
     "perissable": false,
     "dlc": null,
     "a_consommer": null
    },
    {
     "id": "frigo-11",
-    "nom": "La Vache qui rit",
+    "nom": "Margarine Planta Fin",
     "lieu": "frigo",
-    "categorie": "Fromages & Produits laitiers",
-    "quantite": "3 boîtes (1 entamée + 2 intactes)",
-    "note": "En stock",
-    "prioritaire": true,
+    "categorie": "Fromages & Matières grasses",
+    "quantite": "2 barquettes",
+    "note": null,
+    "prioritaire": false,
     "mots": [
-     "vache qui rit"
+     "margarine"
     ],
-    "entre_le": "2026-09-29",
+    "entre_le": "2026-10-07",
     "perissable": false,
     "dlc": null,
     "a_consommer": null
    },
    {
     "id": "frigo-12",
-    "nom": "La Vache qui rit Pik & Croq",
+    "nom": "Fromage blanc nature (probable Câlin)",
     "lieu": "frigo",
-    "categorie": "Fromages & Produits laitiers",
-    "quantite": "1 boîte",
-    "note": "En stock",
+    "categorie": "Yaourts & Desserts",
+    "quantite": "1 seau",
+    "note": null,
     "prioritaire": false,
     "mots": [
-     "vache qui rit"
+     "fromage"
     ],
-    "entre_le": "2026-09-29",
+    "entre_le": "2026-10-07",
     "perissable": false,
     "dlc": null,
     "a_consommer": null
    },
    {
     "id": "frigo-13",
-    "nom": "Beurre doux/demi-sel",
+    "nom": "Bridélice",
     "lieu": "frigo",
-    "categorie": "Fromages & Produits laitiers",
-    "quantite": "4 plaquettes",
-    "note": "Stock confortable",
+    "categorie": "Yaourts & Desserts",
+    "quantite": "1 pot",
+    "note": null,
     "prioritaire": false,
     "mots": [
-     "beurre"
+     "bridelice"
     ],
-    "entre_le": "2026-09-29",
+    "entre_le": "2026-10-07",
     "perissable": false,
     "dlc": null,
     "a_consommer": null
    },
    {
     "id": "frigo-14",
-    "nom": "Margarine 100% végétal",
+    "nom": "Cottage cheese",
     "lieu": "frigo",
-    "categorie": "Fromages & Produits laitiers",
-    "quantite": "1 barquette (Drive)",
-    "note": "Neuve",
+    "categorie": "Yaourts & Desserts",
+    "quantite": "1 pot",
+    "note": null,
     "prioritaire": false,
     "mots": [
-     "margarine"
+     "cottage"
     ],
-    "entre_le": "2026-09-29",
+    "entre_le": "2026-10-07",
     "perissable": false,
     "dlc": null,
     "a_consommer": null
    },
    {
     "id": "frigo-15",
-    "nom": "Margarine 100% végétal",
+    "nom": "Desserts végétaux",
     "lieu": "frigo",
-    "categorie": "Fromages & Produits laitiers",
-    "quantite": "1 barquette (Drive)",
-    "note": "Neuve",
+    "categorie": "Yaourts & Desserts",
+    "quantite": "~3 packs (estimé)",
+    "note": null,
     "prioritaire": false,
     "mots": [
-     "margarine"
+     "dessert"
     ],
-    "entre_le": "2026-09-29",
+    "entre_le": "2026-10-07",
     "perissable": false,
     "dlc": null,
     "a_consommer": null
    },
    {
     "id": "frigo-16",
-    "nom": "Matière grasse liquide cuisson",
+    "nom": "Yaourts couvercle jaune",
     "lieu": "frigo",
-    "categorie": "Fromages & Produits laitiers",
-    "quantite": "1 flacon (Drive)",
-    "note": "Neuf",
+    "categorie": "Yaourts & Desserts",
+    "quantite": "3–4 pots (estimé)",
+    "note": null,
     "prioritaire": false,
     "mots": [
-     "matiere"
+     "yaourt"
     ],
-    "entre_le": "2026-09-29",
+    "entre_le": "2026-10-07",
     "perissable": false,
     "dlc": null,
     "a_consommer": null
    },
    {
     "id": "frigo-17",
-    "nom": "Skyr Vanille 0%",
+    "nom": "Desserts enfants (personnage rose)",
     "lieu": "frigo",
-    "categorie": "Yaourts, Skyrs & Desserts (Gros réassort Drive)",
-    "quantite": "3 packs (12 pots)",
-    "note": "Bruit de fond protéines",
+    "categorie": "Yaourts & Desserts",
+    "quantite": "2 pots",
+    "note": "Nouveau",
     "prioritaire": false,
     "mots": [
-     "skyr"
+     "dessert"
     ],
-    "entre_le": "2026-09-29",
+    "entre_le": "2026-10-07",
     "perissable": false,
     "dlc": null,
     "a_consommer": null
    },
    {
     "id": "frigo-18",
-    "nom": "Skyr sur lit Fruits Rouges 0%",
+    "nom": "Courgettes fraîches",
     "lieu": "frigo",
-    "categorie": "Yaourts, Skyrs & Desserts (Gros réassort Drive)",
-    "quantite": "2 packs (8 pots)",
-    "note": "Bruit de fond protéines",
+    "categorie": "Légumes frais",
+    "quantite": "2",
+    "note": "Nouveau",
     "prioritaire": false,
     "mots": [
-     "skyr"
+     "courgette"
     ],
-    "entre_le": "2026-09-29",
-    "perissable": false,
+    "entre_le": "2026-10-07",
+    "perissable": true,
     "dlc": null,
     "a_consommer": null
    },
    {
     "id": "frigo-19",
-    "nom": "Skyr Stracciatella 2%",
+    "nom": "Betteraves rouges cuites bio",
     "lieu": "frigo",
-    "categorie": "Yaourts, Skyrs & Desserts (Gros réassort Drive)",
-    "quantite": "2 packs (8 pots)",
-    "note": "Bruit de fond protéines",
+    "categorie": "Légumes frais",
+    "quantite": "1 sachet",
+    "note": "Prêt à l'emploi",
     "prioritaire": false,
     "mots": [
-     "skyr"
+     "betterave"
     ],
-    "entre_le": "2026-09-29",
-    "perissable": false,
+    "entre_le": "2026-10-07",
+    "perissable": true,
     "dlc": null,
     "a_consommer": null
    },
    {
     "id": "frigo-20",
-    "nom": "Skyr Mangue Passion",
+    "nom": "Légumes verts/foncés",
     "lieu": "frigo",
-    "categorie": "Yaourts, Skyrs & Desserts (Gros réassort Drive)",
-    "quantite": "1 pack (4 pots)",
-    "note": "Bruit de fond protéines",
+    "categorie": "Légumes frais",
+    "quantite": "1 sachet",
+    "note": "Non identifié — voir À vérifier",
     "prioritaire": false,
     "mots": [
-     "skyr"
+     "legume"
     ],
-    "entre_le": "2026-09-29",
-    "perissable": false,
+    "entre_le": "2026-10-07",
+    "perissable": true,
     "dlc": null,
     "a_consommer": null
    },
    {
     "id": "frigo-21",
-    "nom": "Skyr Nature",
+    "nom": "Préparations emballées dans du papier alu",
     "lieu": "frigo",
-    "categorie": "Yaourts, Skyrs & Desserts (Gros réassort Drive)",
-    "quantite": "1 pot",
-    "note": "Relevé physique frigo",
+    "categorie": "Restes",
+    "quantite": "2",
+    "note": "Contenu et date inconnus — voir À vérifier",
     "prioritaire": false,
     "mots": [
-     "skyr"
+     "preparation"
     ],
-    "entre_le": "2026-09-29",
-    "perissable": false,
+    "entre_le": "2026-10-07",
+    "perissable": true,
     "dlc": null,
     "a_consommer": null
    },
    {
     "id": "frigo-22",
-    "nom": "Fromage blanc Vanille 2,5%",
+    "nom": "Ketchup",
     "lieu": "frigo",
-    "categorie": "Yaourts, Skyrs & Desserts (Gros réassort Drive)",
-    "quantite": "1 pack (8 pots)",
-    "note": "En stock",
+    "categorie": "Condiments (contre-porte et étagère haute)",
+    "quantite": "1",
+    "note": null,
     "prioritaire": false,
     "mots": [
-     "fromage"
+     "ketchup"
     ],
-    "entre_le": "2026-09-29",
+    "entre_le": "2026-10-07",
     "perissable": false,
     "dlc": null,
     "a_consommer": null
    },
    {
     "id": "frigo-23",
-    "nom": "Fromage blanc Nature 3,2%",
+    "nom": "Moutarde / mayonnaise",
     "lieu": "frigo",
-    "categorie": "Yaourts, Skyrs & Desserts (Gros réassort Drive)",
-    "quantite": "1 seau (1 kg)",
-    "note": "En stock",
+    "categorie": "Condiments (contre-porte et étagère haute)",
+    "quantite": "2–3",
+    "note": null,
     "prioritaire": false,
     "mots": [
-     "fromage"
+     "moutarde"
     ],
-    "entre_le": "2026-09-29",
+    "entre_le": "2026-10-07",
     "perissable": false,
     "dlc": null,
     "a_consommer": null
    },
    {
     "id": "frigo-24",
-    "nom": "Fromage blanc / Dessert",
+    "nom": "Sauces en bouteille (vinaigre, soja ?…)",
     "lieu": "frigo",
-    "categorie": "Yaourts, Skyrs & Desserts (Gros réassort Drive)",
-    "quantite": "1 pot",
-    "note": "Relevé physique frigo",
+    "categorie": "Condiments (contre-porte et étagère haute)",
+    "quantite": "4–5",
+    "note": null,
     "prioritaire": false,
     "mots": [
-     "fromage"
+     "sauce"
     ],
-    "entre_le": "2026-09-29",
+    "entre_le": "2026-10-07",
     "perissable": false,
     "dlc": null,
     "a_consommer": null
    },
    {
     "id": "frigo-25",
-    "nom": "Yaourt blanc",
+    "nom": "Bocaux à couvercle vert (étagère du haut de la porte)",
     "lieu": "frigo",
-    "categorie": "Yaourts, Skyrs & Desserts (Gros réassort Drive)",
-    "quantite": "1 pot",
-    "note": "Relevé physique frigo",
+    "categorie": "Condiments (contre-porte et étagère haute)",
+    "quantite": "2–3",
+    "note": null,
     "prioritaire": false,
     "mots": [
-     "yaourt"
+     "bocaux"
     ],
-    "entre_le": "2026-09-29",
+    "entre_le": "2026-10-07",
     "perissable": false,
     "dlc": null,
     "a_consommer": null
    },
    {
     "id": "frigo-26",
-    "nom": "Yaourts lait entier nature bio",
+    "nom": "Bocal à couvercle vert (type cornichons Kühne)",
     "lieu": "frigo",
-    "categorie": "Yaourts, Skyrs & Desserts (Gros réassort Drive)",
-    "quantite": "2 packs (8 pots)",
-    "note": "En stock",
+    "categorie": "Condiments (contre-porte et étagère haute)",
+    "quantite": "1",
+    "note": null,
     "prioritaire": false,
     "mots": [
-     "yaourt"
+     "bocal"
     ],
-    "entre_le": "2026-09-29",
+    "entre_le": "2026-10-07",
     "perissable": false,
     "dlc": null,
     "a_consommer": null
    },
    {
     "id": "frigo-27",
-    "nom": "Yaourts brassés bio Vanille",
+    "nom": "Pot couvercle rouge, étiquette jaune",
     "lieu": "frigo",
-    "categorie": "Yaourts, Skyrs & Desserts (Gros réassort Drive)",
-    "quantite": "2 packs (8 pots)",
-    "note": "En stock",
+    "categorie": "Condiments (contre-porte et étagère haute)",
+    "quantite": "1",
+    "note": null,
     "prioritaire": false,
     "mots": [
-     "yaourt"
+     "pot"
     ],
-    "entre_le": "2026-09-29",
+    "entre_le": "2026-10-07",
     "perissable": false,
     "dlc": null,
     "a_consommer": null
    },
    {
     "id": "frigo-28",
-    "nom": "Crème dessert bio Vanille",
+    "nom": "Petite boîte en métal dorée",
     "lieu": "frigo",
-    "categorie": "Yaourts, Skyrs & Desserts (Gros réassort Drive)",
-    "quantite": "1 pack (4 pots)",
-    "note": "En stock",
+    "categorie": "Condiments (contre-porte et étagère haute)",
+    "quantite": "1",
+    "note": null,
     "prioritaire": false,
     "mots": [
-     "creme"
+     "petite"
     ],
-    "entre_le": "2026-09-29",
+    "entre_le": "2026-10-07",
     "perissable": false,
     "dlc": null,
     "a_consommer": null
    },
    {
     "id": "frigo-29",
-    "nom": "Dessert soja Végé Café",
+    "nom": "Bocal couvercle vert citron (contenu brun : confiture ?)",
     "lieu": "frigo",
-    "categorie": "Yaourts, Skyrs & Desserts (Gros réassort Drive)",
-    "quantite": "1 pack (4 pots)",
-    "note": "Desserts végétaux",
+    "categorie": "Condiments (contre-porte et étagère haute)",
+    "quantite": "1",
+    "note": null,
     "prioritaire": false,
     "mots": [
-     "dessert"
+     "bocal"
     ],
-    "entre_le": "2026-09-29",
+    "entre_le": "2026-10-07",
     "perissable": false,
     "dlc": null,
     "a_consommer": null
    },
    {
     "id": "frigo-30",
-    "nom": "Dessert soja Végé Vanille",
+    "nom": "Bocal couvercle violet (probable olives Tramier)",
     "lieu": "frigo",
-    "categorie": "Yaourts, Skyrs & Desserts (Gros réassort Drive)",
-    "quantite": "1 pack (4 pots)",
-    "note": "Desserts végétaux",
+    "categorie": "Condiments (contre-porte et étagère haute)",
+    "quantite": "1",
+    "note": null,
     "prioritaire": false,
     "mots": [
-     "dessert"
+     "bocal"
     ],
-    "entre_le": "2026-09-29",
+    "entre_le": "2026-10-07",
     "perissable": false,
     "dlc": null,
     "a_consommer": null
    },
    {
     "id": "frigo-31",
-    "nom": "Dessert soja Végé Framboise Passion",
+    "nom": "Sachet doré derrière les bocaux",
     "lieu": "frigo",
-    "categorie": "Yaourts, Skyrs & Desserts (Gros réassort Drive)",
-    "quantite": "1 pack (4 pots)",
-    "note": "Desserts végétaux",
+    "categorie": "Condiments (contre-porte et étagère haute)",
+    "quantite": "1",
+    "note": null,
     "prioritaire": false,
     "mots": [
-     "dessert"
+     "sachet"
     ],
-    "entre_le": "2026-09-29",
+    "entre_le": "2026-10-07",
     "perissable": false,
     "dlc": null,
     "a_consommer": null
    },
    {
     "id": "frigo-32",
-    "nom": "Dessert soja Végé Pistache",
+    "nom": "Bjorg boisson avoine",
     "lieu": "frigo",
-    "categorie": "Yaourts, Skyrs & Desserts (Gros réassort Drive)",
-    "quantite": "1 pack (4 pots)",
-    "note": "Desserts végétaux",
+    "categorie": "Boissons",
+    "quantite": "1",
+    "note": null,
     "prioritaire": false,
     "mots": [
-     "dessert"
+     "bjorg"
     ],
-    "entre_le": "2026-09-29",
+    "entre_le": "2026-10-07",
     "perissable": false,
     "dlc": null,
     "a_consommer": null
    },
    {
     "id": "frigo-33",
-    "nom": "Dessert Sojasun Abricot / Goyave",
+    "nom": "Jus (bouchon orange)",
     "lieu": "frigo",
-    "categorie": "Yaourts, Skyrs & Desserts (Gros réassort Drive)",
-    "quantite": "1 pack (4 pots)",
-    "note": "Desserts végétaux",
+    "categorie": "Boissons",
+    "quantite": "1",
+    "note": null,
     "prioritaire": false,
     "mots": [
-     "dessert"
+     "jus"
     ],
-    "entre_le": "2026-09-29",
+    "entre_le": "2026-10-07",
     "perissable": false,
     "dlc": null,
     "a_consommer": null
    },
    {
     "id": "frigo-34",
-    "nom": "Dessert Sojasun Framboise / Passion",
+    "nom": "Pulco citron vert",
     "lieu": "frigo",
-    "categorie": "Yaourts, Skyrs & Desserts (Gros réassort Drive)",
-    "quantite": "1 pack (4 pots)",
-    "note": "Desserts végétaux",
+    "categorie": "Boissons",
+    "quantite": "1",
+    "note": null,
     "prioritaire": false,
     "mots": [
-     "dessert"
+     "pulco"
     ],
-    "entre_le": "2026-09-29",
+    "entre_le": "2026-10-07",
     "perissable": false,
     "dlc": null,
     "a_consommer": null
    },
    {
     "id": "frigo-35",
-    "nom": "Dessert Sojasun Chocolat",
+    "nom": "Bouteille verte bouchon jaune",
     "lieu": "frigo",
-    "categorie": "Yaourts, Skyrs & Desserts (Gros réassort Drive)",
-    "quantite": "1 pack (6 pots)",
-    "note": "Desserts végétaux",
+    "categorie": "Boissons",
+    "quantite": "1",
+    "note": null,
     "prioritaire": false,
     "mots": [
-     "dessert"
+     "bouteille"
     ],
-    "entre_le": "2026-09-29",
+    "entre_le": "2026-10-07",
     "perissable": false,
     "dlc": null,
     "a_consommer": null
    },
    {
     "id": "frigo-36",
-    "nom": "Spécialité Coco Nature",
+    "nom": "Champagne / crémant",
     "lieu": "frigo",
-    "categorie": "Yaourts, Skyrs & Desserts (Gros réassort Drive)",
-    "quantite": "1 pack (4 pots)",
-    "note": "Desserts végétaux",
+    "categorie": "Boissons",
+    "quantite": "1",
+    "note": null,
     "prioritaire": false,
     "mots": [
-     "specialite"
+     "champagne"
     ],
-    "entre_le": "2026-09-29",
+    "entre_le": "2026-10-07",
     "perissable": false,
     "dlc": null,
     "a_consommer": null
    },
    {
     "id": "frigo-37",
-    "nom": "Carottes fraîches",
+    "nom": "Bouteilles sombres (vin ?)",
     "lieu": "frigo",
-    "categorie": "Légumes frais & Crudités",
-    "quantite": "~1,5 à 2 kg",
-    "note": "🟠 Gros stock à écouler en priorité",
-    "prioritaire": true,
+    "categorie": "Boissons",
+    "quantite": "2–3",
+    "note": null,
+    "prioritaire": false,
     "mots": [
-     "carotte"
+     "bouteille"
     ],
-    "entre_le": "2026-09-29",
-    "perissable": true,
+    "entre_le": "2026-10-07",
+    "perissable": false,
     "dlc": null,
     "a_consommer": null
    },
    {
     "id": "frigo-38",
-    "nom": "Endives",
+    "nom": "Petites bouteilles de bière + 1 canette",
     "lieu": "frigo",
-    "categorie": "Légumes frais & Crudités",
-    "quantite": "2 sachets",
-    "note": "🟢 À planifier (braisées ou salades)",
+    "categorie": "Boissons",
+    "quantite": "~8–10 (estimé)",
+    "note": null,
     "prioritaire": false,
     "mots": [
-     "endive"
+     "petite"
     ],
-    "entre_le": "2026-09-29",
-    "perissable": true,
+    "entre_le": "2026-10-07",
+    "perissable": false,
     "dlc": null,
     "a_consommer": null
    },
    {
     "id": "frigo-39",
-    "nom": "Betteraves rouges cuites bio",
+    "nom": "Bouteilles diverses (brune, jaune, vert-jaune)",
     "lieu": "frigo",
-    "categorie": "Légumes frais & Crudités",
-    "quantite": "1 sachet (~500 g)",
-    "note": "Prêt à l'emploi",
+    "categorie": "Boissons",
+    "quantite": "3",
+    "note": null,
     "prioritaire": false,
     "mots": [
-     "betterave"
+     "bouteille"
     ],
-    "entre_le": "2026-09-29",
-    "perissable": true,
-    "dlc": null,
-    "a_consommer": null
-   },
-   {
-    "id": "frigo-40",
-    "nom": "Reste cuisiné maison",
-    "lieu": "frigo",
-    "categorie": "Plats cuisinés, restes & pain frais",
-    "quantite": "1 boîte",
-    "note": "Étagère haute (à consommer sous 24–48 h)",
-    "prioritaire": false,
-    "mots": [
-     "reste"
-    ],
-    "entre_le": "2026-09-29",
-    "perissable": true,
-    "dlc": null,
-    "a_consommer": {
-     "avant": "2026-09-30",
-     "raison": "à consommer sous 24–48 h",
-     "niveau": "urgent"
-    }
-   },
-   {
-    "id": "frigo-41",
-    "nom": "Pain de mie 100% Mie Complet",
-    "lieu": "frigo",
-    "categorie": "Plats cuisinés, restes & pain frais",
-    "quantite": "1 paquet (Drive)",
-    "note": "Consommation courante / sandwichs",
-    "prioritaire": false,
-    "mots": [
-     "pain"
-    ],
-    "entre_le": "2026-09-29",
-    "perissable": true,
-    "dlc": null,
-    "a_consommer": null
-   },
-   {
-    "id": "frigo-42",
-    "nom": "Confitures maison",
-    "lieu": "frigo",
-    "categorie": "Condiments & Boissons fraîches",
-    "quantite": "2 bocaux",
-    "note": "Étagère haute",
-    "prioritaire": false,
-    "mots": [
-     "confiture"
-    ],
-    "entre_le": "2026-09-29",
+    "entre_le": "2026-10-07",
     "perissable": false,
     "dlc": null,
     "a_consommer": null
    },
    {
-    "id": "frigo-43",
-    "nom": "Olives noires",
-    "lieu": "frigo",
-    "categorie": "Condiments & Boissons fraîches",
-    "quantite": "1 bocal",
-    "note": "Étagère haute",
-    "prioritaire": false,
-    "mots": [
-     "olive"
-    ],
-    "entre_le": "2026-09-29",
-    "perissable": false,
-    "dlc": null,
-    "a_consommer": null
-   },
-   {
-    "id": "frigo-44",
-    "nom": "Eau gazeuse Maison Perrier Framboise",
-    "lieu": "frigo",
-    "categorie": "Condiments & Boissons fraîches",
-    "quantite": "12 canettes (2 packs) (Drive)",
-    "note": "En réserve / au frais",
-    "prioritaire": false,
-    "mots": [
-     "eau"
-    ],
-    "entre_le": "2026-09-29",
-    "perissable": false,
-    "dlc": null,
-    "a_consommer": null
-   },
-   {
-    "id": "frigo-45",
-    "nom": "Pur jus d'orange bio sans pulpe",
-    "lieu": "frigo",
-    "categorie": "Condiments & Boissons fraîches",
-    "quantite": "2 bouteilles (Drive)",
-    "note": "En réserve / au frais",
-    "prioritaire": false,
-    "mots": [
-     "pur"
-    ],
-    "entre_le": "2026-09-29",
-    "perissable": false,
-    "dlc": null,
-    "a_consommer": null
-   },
-   {
-    "id": "frigo-46",
-    "nom": "Pur jus de pomme bio",
-    "lieu": "frigo",
-    "categorie": "Condiments & Boissons fraîches",
-    "quantite": "4 bouteilles (1 frigo + 3 Drive)",
-    "note": "En stock",
-    "prioritaire": false,
-    "mots": [
-     "pur"
-    ],
-    "entre_le": "2026-09-29",
-    "perissable": false,
-    "dlc": null,
-    "a_consommer": null
-   },
-   {
-    "id": "frigo-47",
-    "nom": "Pur jus de raisin bio",
-    "lieu": "frigo",
-    "categorie": "Condiments & Boissons fraîches",
-    "quantite": "1 bouteille (Drive)",
-    "note": "En stock",
-    "prioritaire": false,
-    "mots": [
-     "pur"
-    ],
-    "entre_le": "2026-09-29",
-    "perissable": false,
-    "dlc": null,
-    "a_consommer": null
-   },
-   {
-    "id": "frigo-48",
-    "nom": "Bière aromatisée Somersby Citron Yuzu",
-    "lieu": "frigo",
-    "categorie": "Condiments & Boissons fraîches",
-    "quantite": "3 bouteilles (1 pack) (Drive)",
-    "note": "Au frais",
-    "prioritaire": false,
-    "mots": [
-     "biere"
-    ],
-    "entre_le": "2026-09-29",
-    "perissable": false,
-    "dlc": null,
-    "a_consommer": null
-   },
-   {
-    "id": "frigo-49",
-    "nom": "Bières Victoria",
-    "lieu": "frigo",
-    "categorie": "Condiments & Boissons fraîches",
-    "quantite": "2+ bouteilles",
-    "note": "Contre-porte basse",
-    "prioritaire": false,
-    "mots": [
-     "biere"
-    ],
-    "entre_le": "2026-09-29",
-    "perissable": false,
-    "dlc": null,
-    "a_consommer": null
-   },
-   {
-    "id": "frigo-50",
-    "nom": "Jus de citron / Eau gazeuse",
-    "lieu": "frigo",
-    "categorie": "Condiments & Boissons fraîches",
-    "quantite": "2 bouteilles",
-    "note": "En stock",
-    "prioritaire": false,
-    "mots": [
-     "jus"
-    ],
-    "entre_le": "2026-09-29",
-    "perissable": false,
-    "dlc": null,
-    "a_consommer": null
-   },
-   {
-    "id": "congelateur-51",
+    "id": "congelateur-40",
     "nom": "Nuggets",
     "lieu": "congelateur",
     "categorie": "Viandes / Volailles",
@@ -1007,7 +827,7 @@
     "a_consommer": null
    },
    {
-    "id": "congelateur-52",
+    "id": "congelateur-41",
     "nom": "Bacon tranché",
     "lieu": "congelateur",
     "categorie": "Viandes / Volailles",
@@ -1023,7 +843,7 @@
     "a_consommer": null
    },
    {
-    "id": "congelateur-53",
+    "id": "congelateur-42",
     "nom": "Allumettes (lardons)",
     "lieu": "congelateur",
     "categorie": "Viandes / Volailles",
@@ -1039,7 +859,7 @@
     "a_consommer": null
    },
    {
-    "id": "congelateur-54",
+    "id": "congelateur-43",
     "nom": "Galettes végé boulgour curry",
     "lieu": "congelateur",
     "categorie": "Plats préparés / Végé",
@@ -1055,7 +875,7 @@
     "a_consommer": null
    },
    {
-    "id": "congelateur-55",
+    "id": "congelateur-44",
     "nom": "Petits pois",
     "lieu": "congelateur",
     "categorie": "Légumes",
@@ -1071,7 +891,7 @@
     "a_consommer": null
    },
    {
-    "id": "congelateur-56",
+    "id": "congelateur-45",
     "nom": "Légumes wok",
     "lieu": "congelateur",
     "categorie": "Légumes",
@@ -1087,7 +907,7 @@
     "a_consommer": null
    },
    {
-    "id": "congelateur-57",
+    "id": "congelateur-46",
     "nom": "Courgettes",
     "lieu": "congelateur",
     "categorie": "Légumes",
@@ -1103,7 +923,7 @@
     "a_consommer": null
    },
    {
-    "id": "congelateur-58",
+    "id": "congelateur-47",
     "nom": "Poireaux",
     "lieu": "congelateur",
     "categorie": "Légumes",
@@ -1119,7 +939,7 @@
     "a_consommer": null
    },
    {
-    "id": "congelateur-59",
+    "id": "congelateur-48",
     "nom": "Haricots verts",
     "lieu": "congelateur",
     "categorie": "Légumes",
@@ -1135,7 +955,7 @@
     "a_consommer": null
    },
    {
-    "id": "congelateur-60",
+    "id": "congelateur-49",
     "nom": "Baguettes",
     "lieu": "congelateur",
     "categorie": "Pain / Divers",
@@ -1151,7 +971,7 @@
     "a_consommer": null
    },
    {
-    "id": "congelateur-61",
+    "id": "congelateur-50",
     "nom": "Frites (micro-ondes)",
     "lieu": "congelateur",
     "categorie": "Pain / Divers",
@@ -1167,7 +987,7 @@
     "a_consommer": null
    },
    {
-    "id": "cellier-62",
+    "id": "cellier-51",
     "nom": "Wraps blé nature (format familial x10)",
     "lieu": "cellier",
     "categorie": "Féculents, céréales, wraps & graines",
@@ -1183,7 +1003,7 @@
     "a_consommer": null
    },
    {
-    "id": "cellier-63",
+    "id": "cellier-52",
     "nom": "Wraps blé complet",
     "lieu": "cellier",
     "categorie": "Féculents, céréales, wraps & graines",
@@ -1199,7 +1019,7 @@
     "a_consommer": null
    },
    {
-    "id": "cellier-64",
+    "id": "cellier-53",
     "nom": "Pain de mie Seigle & graines",
     "lieu": "cellier",
     "categorie": "Féculents, céréales, wraps & graines",
@@ -1215,7 +1035,7 @@
     "a_consommer": null
    },
    {
-    "id": "cellier-65",
+    "id": "cellier-54",
     "nom": "Graines de chia bio",
     "lieu": "cellier",
     "categorie": "Féculents, céréales, wraps & graines",
@@ -1231,7 +1051,7 @@
     "a_consommer": null
    },
    {
-    "id": "cellier-66",
+    "id": "cellier-55",
     "nom": "Lentilles vertes bio",
     "lieu": "cellier",
     "categorie": "Féculents, céréales, wraps & graines",
@@ -1247,7 +1067,7 @@
     "a_consommer": null
    },
    {
-    "id": "cellier-67",
+    "id": "cellier-56",
     "nom": "Pommes de terre de garde",
     "lieu": "cellier",
     "categorie": "Féculents, céréales, wraps & graines",
@@ -1263,7 +1083,7 @@
     "a_consommer": null
    },
    {
-    "id": "cellier-68",
+    "id": "cellier-57",
     "nom": "Flocons d'avoine bio",
     "lieu": "cellier",
     "categorie": "Féculents, céréales, wraps & graines",
@@ -1279,7 +1099,7 @@
     "a_consommer": null
    },
    {
-    "id": "cellier-69",
+    "id": "cellier-58",
     "nom": "Sarrasin décortiqué / graines",
     "lieu": "cellier",
     "categorie": "Féculents, céréales, wraps & graines",
@@ -1295,7 +1115,7 @@
     "a_consommer": null
    },
    {
-    "id": "cellier-70",
+    "id": "cellier-59",
     "nom": "Pâtes courtes (coquillettes, penne...)",
     "lieu": "cellier",
     "categorie": "Féculents, céréales, wraps & graines",
@@ -1311,7 +1131,7 @@
     "a_consommer": null
    },
    {
-    "id": "cellier-71",
+    "id": "cellier-60",
     "nom": "Pâtes longues (spaghetti Barilla)",
     "lieu": "cellier",
     "categorie": "Féculents, céréales, wraps & graines",
@@ -1327,7 +1147,7 @@
     "a_consommer": null
    },
    {
-    "id": "cellier-72",
+    "id": "cellier-61",
     "nom": "Riz complet long grain étuvé",
     "lieu": "cellier",
     "categorie": "Féculents, céréales, wraps & graines",
@@ -1343,7 +1163,7 @@
     "a_consommer": null
    },
    {
-    "id": "cellier-73",
+    "id": "cellier-62",
     "nom": "Blé dur précuit",
     "lieu": "cellier",
     "categorie": "Féculents, céréales, wraps & graines",
@@ -1359,7 +1179,7 @@
     "a_consommer": null
    },
    {
-    "id": "cellier-74",
+    "id": "cellier-63",
     "nom": "Boulgour & Quinoa gourmand",
     "lieu": "cellier",
     "categorie": "Féculents, céréales, wraps & graines",
@@ -1375,7 +1195,7 @@
     "a_consommer": null
    },
    {
-    "id": "cellier-75",
+    "id": "cellier-64",
     "nom": "Pois chiches cuits",
     "lieu": "cellier",
     "categorie": "Légumineuses & Conserves de légumes",
@@ -1391,7 +1211,7 @@
     "a_consommer": null
    },
    {
-    "id": "cellier-76",
+    "id": "cellier-65",
     "nom": "Lait de coco bio",
     "lieu": "cellier",
     "categorie": "Légumineuses & Conserves de légumes",
@@ -1407,7 +1227,7 @@
     "a_consommer": null
    },
    {
-    "id": "cellier-77",
+    "id": "cellier-66",
     "nom": "Purée / pulpe de tomates",
     "lieu": "cellier",
     "categorie": "Légumineuses & Conserves de légumes",
@@ -1423,7 +1243,7 @@
     "a_consommer": null
    },
    {
-    "id": "cellier-78",
+    "id": "cellier-67",
     "nom": "Sauce tomate cuisinée",
     "lieu": "cellier",
     "categorie": "Légumineuses & Conserves de légumes",
@@ -1439,7 +1259,7 @@
     "a_consommer": null
    },
    {
-    "id": "cellier-79",
+    "id": "cellier-68",
     "nom": "Tomates séchées / antipasti",
     "lieu": "cellier",
     "categorie": "Légumineuses & Conserves de légumes",
@@ -1455,7 +1275,7 @@
     "a_consommer": null
    },
    {
-    "id": "cellier-80",
+    "id": "cellier-69",
     "nom": "Olives / câpres / cornichons",
     "lieu": "cellier",
     "categorie": "Légumineuses & Conserves de légumes",
@@ -1471,7 +1291,7 @@
     "a_consommer": null
    },
    {
-    "id": "cellier-81",
+    "id": "cellier-70",
     "nom": "Pois chiches secs / lentilles",
     "lieu": "cellier",
     "categorie": "Légumineuses & Conserves de légumes",
@@ -1487,7 +1307,7 @@
     "a_consommer": null
    },
    {
-    "id": "cellier-82",
+    "id": "cellier-71",
     "nom": "Thon Albacore au naturel",
     "lieu": "cellier",
     "categorie": "Poissons & Protéines en conserve",
@@ -1503,7 +1323,7 @@
     "a_consommer": null
    },
    {
-    "id": "cellier-83",
+    "id": "cellier-72",
     "nom": "Petits bocaux poissons / tapas",
     "lieu": "cellier",
     "categorie": "Poissons & Protéines en conserve",
@@ -1519,7 +1339,7 @@
     "a_consommer": null
    },
    {
-    "id": "cellier-84",
+    "id": "cellier-73",
     "nom": "Maïzena",
     "lieu": "cellier",
     "categorie": "Farines, sucres & pâtisserie",
@@ -1535,7 +1355,7 @@
     "a_consommer": null
    },
    {
-    "id": "cellier-85",
+    "id": "cellier-74",
     "nom": "Farine Francine",
     "lieu": "cellier",
     "categorie": "Farines, sucres & pâtisserie",
@@ -1551,7 +1371,7 @@
     "a_consommer": null
    },
    {
-    "id": "cellier-86",
+    "id": "cellier-75",
     "nom": "Farine sans gluten / amande",
     "lieu": "cellier",
     "categorie": "Farines, sucres & pâtisserie",
@@ -1567,7 +1387,7 @@
     "a_consommer": null
    },
    {
-    "id": "cellier-87",
+    "id": "cellier-76",
     "nom": "Sucre blond de canne",
     "lieu": "cellier",
     "categorie": "Farines, sucres & pâtisserie",
@@ -1583,7 +1403,7 @@
     "a_consommer": null
    },
    {
-    "id": "cellier-88",
+    "id": "cellier-77",
     "nom": "Cassonade / sucre roux",
     "lieu": "cellier",
     "categorie": "Farines, sucres & pâtisserie",
@@ -1599,7 +1419,7 @@
     "a_consommer": null
    },
    {
-    "id": "cellier-89",
+    "id": "cellier-78",
     "nom": "Chocolat en poudre",
     "lieu": "cellier",
     "categorie": "Farines, sucres & pâtisserie",
@@ -1615,7 +1435,7 @@
     "a_consommer": null
    },
    {
-    "id": "cellier-90",
+    "id": "cellier-79",
     "nom": "Fruits secs & amandes",
     "lieu": "cellier",
     "categorie": "Farines, sucres & pâtisserie",
@@ -1631,7 +1451,7 @@
     "a_consommer": null
    },
    {
-    "id": "cellier-91",
+    "id": "cellier-80",
     "nom": "Fruits séchés (figues/dattes/pruneaux)",
     "lieu": "cellier",
     "categorie": "Farines, sucres & pâtisserie",
@@ -1647,7 +1467,7 @@
     "a_consommer": null
    },
    {
-    "id": "cellier-92",
+    "id": "cellier-81",
     "nom": "Beurre de cacahuètes",
     "lieu": "cellier",
     "categorie": "Épicerie sucrée, petits-déjeuners & thés",
@@ -1663,7 +1483,7 @@
     "a_consommer": null
    },
    {
-    "id": "cellier-93",
+    "id": "cellier-82",
     "nom": "Biscuits Thé LU",
     "lieu": "cellier",
     "categorie": "Épicerie sucrée, petits-déjeuners & thés",
@@ -1679,7 +1499,7 @@
     "a_consommer": null
    },
    {
-    "id": "cellier-94",
+    "id": "cellier-83",
     "nom": "Confitures, miels & pâtes à tartiner",
     "lieu": "cellier",
     "categorie": "Épicerie sucrée, petits-déjeuners & thés",
@@ -1695,7 +1515,7 @@
     "a_consommer": null
    },
    {
-    "id": "cellier-95",
+    "id": "cellier-84",
     "nom": "Café en grains / moulu",
     "lieu": "cellier",
     "categorie": "Épicerie sucrée, petits-déjeuners & thés",
@@ -1711,7 +1531,7 @@
     "a_consommer": null
    },
    {
-    "id": "cellier-96",
+    "id": "cellier-85",
     "nom": "Thés & infusions",
     "lieu": "cellier",
     "categorie": "Épicerie sucrée, petits-déjeuners & thés",
@@ -1727,7 +1547,7 @@
     "a_consommer": null
    },
    {
-    "id": "cellier-97",
+    "id": "cellier-86",
     "nom": "Maison Perrier Framboise",
     "lieu": "cellier",
     "categorie": "Snacks apéro, boissons & animalerie",
@@ -1743,7 +1563,7 @@
     "a_consommer": null
    },
    {
-    "id": "cellier-98",
+    "id": "cellier-87",
     "nom": "Pur jus (orange, pomme, raisin)",
     "lieu": "cellier",
     "categorie": "Snacks apéro, boissons & animalerie",
@@ -1759,7 +1579,7 @@
     "a_consommer": null
    },
    {
-    "id": "cellier-99",
+    "id": "cellier-88",
     "nom": "Bière aromatisée Somersby Citron Yuzu",
     "lieu": "cellier",
     "categorie": "Snacks apéro, boissons & animalerie",
@@ -1775,7 +1595,7 @@
     "a_consommer": null
    },
    {
-    "id": "cellier-100",
+    "id": "cellier-89",
     "nom": "Chips & tuiles apéro",
     "lieu": "cellier",
     "categorie": "Snacks apéro, boissons & animalerie",
@@ -1791,7 +1611,7 @@
     "a_consommer": null
    },
    {
-    "id": "cellier-101",
+    "id": "cellier-90",
     "nom": "Gressins / biscuits apéro",
     "lieu": "cellier",
     "categorie": "Snacks apéro, boissons & animalerie",
@@ -1807,7 +1627,7 @@
     "a_consommer": null
    },
    {
-    "id": "cellier-102",
+    "id": "cellier-91",
     "nom": "Bières & champagnes",
     "lieu": "cellier",
     "categorie": "Snacks apéro, boissons & animalerie",
@@ -1823,7 +1643,7 @@
     "a_consommer": null
    },
    {
-    "id": "cellier-103",
+    "id": "cellier-92",
     "nom": "Alimentation chats (Gourmet Gold)",
     "lieu": "cellier",
     "categorie": "Snacks apéro, boissons & animalerie",
@@ -1839,7 +1659,7 @@
     "a_consommer": null
    },
    {
-    "id": "cellier-104",
+    "id": "cellier-93",
     "nom": "Essuie-tout & papier cuisson / alu",
     "lieu": "cellier",
     "categorie": "Snacks apéro, boissons & animalerie",
@@ -2610,30 +2430,30 @@
     "jour": "ven9",
     "moment": "midi",
     "convives": {
-     "J": "bc",
-     "P": "bf",
+     "J": "m",
+     "P": "m",
      "G": "c"
     },
-    "besoin": "Boîte froide pour Pauline (atelier)",
+    "besoin": "",
     "options": [
      {
-      "ref": "10_Cookeo_OnePot/Salade_Lentilles_Haddock_Roquette",
+      "ref": "10_Cookeo_OnePot/Gumbo_de_Crevettes_a_la_Creole",
       "pourquoi": "Recommandation : plat complet de saison"
      },
      {
-      "ref": "06_Cookeo_Plats_du_Soir/Salade_Brocoli_Quinoa_Feta_Citron",
+      "ref": "07_Simplissime_Veggie/Riz_Frit_Aubergines_Noix_De_Cajou",
       "pourquoi": "Variante végétarienne"
      },
      {
-      "ref": "03_Express_Simplissime/Salade_Pates_Thon_Mozza_Pesto",
+      "ref": "11_On_Mange_Quoi_Ce_Soir/Pates_Thon_Huile_Tomates_Olives",
       "pourquoi": "Poisson"
      },
      {
-      "ref": "10_Cookeo_OnePot/Salade_Tofu_Pois_Gourmands_Coreenne",
+      "ref": "06_Cookeo_Plats_du_Soir/Salade_Brocoli_Quinoa_Feta_Citron",
       "pourquoi": "Rapide : 30 min ou moins"
      },
      {
-      "ref": "05_Cakes_et_Flans/Cake_Saumon_Brocoli",
+      "ref": "10_Cookeo_OnePot/Salade_Tofu_Pois_Gourmands_Coreenne",
       "pourquoi": "Jamais cuisinée : pour changer"
      }
     ]
@@ -2705,7 +2525,7 @@
       "pourquoi": "Variante végétarienne"
      },
      {
-      "ref": "11_On_Mange_Quoi_Ce_Soir/Pates_Thon_Huile_Tomates_Olives",
+      "ref": "03_Express_Simplissime/Salade_Pates_Thon_Mozza_Pesto",
       "pourquoi": "Poisson"
      },
      {
@@ -2779,7 +2599,7 @@
       "pourquoi": "Rapide : 30 min ou moins"
      },
      {
-      "ref": "10_Cookeo_OnePot/Gumbo_de_Crevettes_a_la_Creole",
+      "ref": "09_Simplissime_Petit_Budget/Blanquette_de_Legumes_au_Jambon",
       "pourquoi": "Jamais cuisinée : pour changer"
      }
     ]
@@ -2837,7 +2657,7 @@
       "pourquoi": "Variante végétarienne"
      },
      {
-      "ref": "11_On_Mange_Quoi_Ce_Soir/Saumon_Ecailles_Chorizo_Aubergines_Grillees",
+      "ref": "05_Cakes_et_Flans/Cake_Saumon_Brocoli",
       "pourquoi": "Poisson"
      },
      {
@@ -2855,11 +2675,11 @@
     "jour": "mar13",
     "moment": "midi",
     "convives": {
-     "J": "bc",
+     "J": "m",
      "P": "m",
      "G": "c"
     },
-    "besoin": "Boîte de Jérôme : réchauffable 2 min, mangeable à la fourchette",
+    "besoin": "",
     "options": [
      {
       "ref": "08_Diners_Apres_Boulot/Boulettes_Mexicaine",
@@ -2870,7 +2690,7 @@
       "pourquoi": "Variante végétarienne"
      },
      {
-      "ref": "03_Express_Simplissime/Tataki_Saumon_Quinoa",
+      "ref": "11_On_Mange_Quoi_Ce_Soir/Saumon_Ecailles_Chorizo_Aubergines_Grillees",
       "pourquoi": "Poisson"
      },
      {

@@ -121,8 +121,10 @@ test("stocks : rapprochement par mot-clé et usage dans la période", async () =
   assert.deepEqual(u, { c: ["b"] });
   const res = chercher(exemple.recettes, { ecoule: true }, { stocks: exemple.stocks.articles });
   assert.ok(res.length > 0 && res.every((x) => x.ecoules.length > 0));
-  const parStock = chercher(exemple.recettes, { stockId: exemple.stocks.articles.find((a) => a.mots[0] === "carotte").id }, { stocks: exemple.stocks.articles });
-  assert.ok(parStock.length > 5);
+  // L'inventaire réel change : on prend l'article le plus utilisé par les recettes.
+  const parStock = Math.max(...exemple.stocks.articles.filter((a) => a.mots?.length).map((a) =>
+    chercher(exemple.recettes, { stockId: a.id }, { stocks: exemple.stocks.articles }).length));
+  assert.ok(parStock > 5);
 });
 
 test("chiffres aberrants : signalés et exclus des totaux", async () => {
