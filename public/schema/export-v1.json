@@ -161,13 +161,14 @@
               "numero": { "type": "integer" },
               "plat": {
                 "type": "object", "required": ["nom"],
-                "properties": { "ref": { "type": ["string", "null"] }, "nom": { "type": "string" }, "portion": { "enum": [0.75, 1, 1.25] }, "note": { "type": "string" } }
+                "properties": { "ref": { "type": ["string", "null"] }, "nom": { "type": "string" }, "portion": { "enum": [0.75, 1, 1.25] }, "note": { "type": "string" }, "reste_de": { "$ref": "#/$defs/id" } }
               },
               "impose": {
                 "type": "object", "required": ["nom"],
                 "properties": { "ref": { "type": ["string", "null"] }, "nom": { "type": "string" }, "raison": { "type": "string" } }
               },
               "besoin": { "type": "string" },
+              "reste_veille": { "type": "boolean" },
               "defaut": { "type": ["string", "null"] },
               "options": {
                 "type": "array", "maxItems": 5,

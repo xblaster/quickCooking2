@@ -1,7 +1,7 @@
 // Interface de Quick Cooking : routes par ancre (#/semaine, #/courses, #/choisir, #/recettes).
 import { rendreMarkdown } from "./markdown.js";
 import { appareilsConnus, chercher, CRITERES_VIDES } from "./recherche.js";
-import { alertesRecette, articlesAConsommer, evaluerPeriode, indexRecettes, macrosParJour, pire, repasAvantEcheance, usageStocks } from "./regles.js";
+import { alertesRecette, articlesAConsommer, evaluerPeriode, indexRecettes, macrosParJour, pire, repasAvantEcheance, resteVeille, usageStocks } from "./regles.js";
 import { arrondi, dateLocale, esc, isoDuJour, LIBELLE_MOMENT, LIBELLE_TYPE, normaliser } from "./outils.js";
 
 const $ = (sel, racine = document) => racine.querySelector(sel);
@@ -253,6 +253,8 @@ function vueSemaine() {
           return `<article class="repas">
             <div class="repas-tete"><span class="moment">${LIBELLE_MOMENT[r.moment]}</span><span class="convives">${convivesTexte(r.convives)}</span></div>
             <div class="plat">${pastille(r.numero)}<div><p class="plat-nom">${esc(r.plat?.nom ?? "—")}</p>
+              ${r.plat?.reste_de ? `<p class="plat-note reste">↺ Reste du dîner de la veille</p>` : ""}
+              ${p.repas.some((m) => m.plat?.reste_de === r.id) ? `<p class="plat-note reste">↺ Cuisiner aussi pour le midi du lendemain</p>` : ""}
               ${r.plat?.note ? `<p class="plat-note">${esc(r.plat.note)}</p>` : ""}
               ${r.plat?.portion && r.plat.portion !== 1 ? `<p class="plat-note">Portion ${r.plat.portion < 1 ? "légère" : "copieuse"}</p>` : ""}
               ${rec ? `<p class="plat-meta">${chiffres(rec, r.plat?.portion ?? 1)} ${boutonFiche(rec.ref)}</p>` : ""}
@@ -377,12 +379,25 @@ function carteChoixRepas(p, r, evalu, ouvert) {
   const c = etat.choix.repas[r.id] || {};
   const contexte = { foyer: etat.donnees.foyer, preferences: etat.donnees.preferences };
   const refsOptions = (r.options || []).map((o) => o.ref);
-  const remplacement = c.ref && !refsOptions.includes(c.ref) ? etat.index.get(c.ref) : null;
+  const estReste = c.origine === "reste";
+  const remplacement = c.ref && !estReste && !refsOptions.includes(c.ref) ? etat.index.get(c.ref) : null;
+  const rv = resteVeille(r, { ...contexte, periode: p, plats: platsAVenir(), index: etat.index });
+  const veilleCourt = rv ? rv.veille.label.split(" ")[0].toLowerCase() : "";
+  const optionReste = !rv ? "" : rv.possible
+    ? `<li class="option option-reste${estReste ? " choisie" : ""}">
+      <button type="button" class="option-bouton" data-action="choisir" data-repas="${esc(r.id)}" data-ref="${esc(rv.ref)}" data-origine="reste" aria-pressed="${estReste}" ${ouvert ? "" : "disabled"}>
+        <span class="rond" aria-hidden="true"></span>
+        <span class="option-texte"><span class="plat-nom">↺ ${esc(rv.recette.nom)}</span>
+          <span class="option-meta"><span class="pourquoi">Reste du dîner de ${esc(veilleCourt)} : en cuisiner ${rv.mangeurs} part${rv.mangeurs > 1 ? "s" : ""} de plus, rien à préparer ce midi</span>${chiffres(rv.recette)}</span>
+        </span>
+      </button>
+    </li>`
+    : `<li class="option option-reste indisponible"><span class="discret petit">↺ Reste du dîner de ${esc(veilleCourt)} : ${esc(rv.raison)}</span></li>`;
 
   const options = (r.options || []).map((o, i) => {
     const rec = etat.index.get(o.ref);
     if (!rec) return "";
-    const choisi = c.ref === o.ref;
+    const choisi = c.ref === o.ref && !estReste;
     const al = alertesRecette(rec, r, contexte).filter((a) => a.niveau !== "info");
     return `<li class="option${choisi ? " choisie" : ""}">
       <button type="button" class="option-bouton" data-action="choisir" data-repas="${esc(r.id)}" data-ref="${esc(o.ref)}" data-origine="option" aria-pressed="${choisi}" ${ouvert ? "" : "disabled"}>
@@ -409,13 +424,23 @@ function carteChoixRepas(p, r, evalu, ouvert) {
     </div>` : "";
 
   return `<article class="repas${c.ref ? " fait" : ""}" id="repas-${esc(r.id)}">${tete}
-    <ul class="options">${options}</ul>
+    ${lendemainReste(p, r)}
+    <ul class="options">${optionReste}${options}</ul>
     ${details}
     ${ouvert ? `<div class="repas-actions">
       <button type="button" class="bouton secondaire" data-action="remplacer" data-repas="${esc(r.id)}">🔍 Autre recette…</button>
       ${c.ref ? `<button type="button" class="lien" data-action="vider" data-repas="${esc(r.id)}">Annuler le choix</button>` : ""}
     </div>` : ""}
   </article>`;
+}
+
+/** Sur un dîner : rappel quand le midi du lendemain en reprend les restes. */
+function lendemainReste(p, r) {
+  if (r.moment !== "soir") return "";
+  const midis = p.repas.filter((m) => etat.choix.repas[m.id]?.origine === "reste" && etat.choix.repas[m.id]?.de === r.id);
+  if (!midis.length) return "";
+  const parts = midis.reduce((n, m) => n + Object.values(m.convives).filter((l) => l !== "c").length, 0);
+  return `<p class="besoin reste">↺ Cuisiner ${parts} part${parts > 1 ? "s" : ""} de plus pour le midi du lendemain</p>`;
 }
 
 async function enregistrerRepas(repasId, modif) {
@@ -883,7 +908,8 @@ document.addEventListener("click", (ev) => {
     ecrireLocal("qc-moi", etat.moi);
     rafraichir();
   } else if (action === "choisir") {
-    const deja = etat.choix.repas[repas]?.ref === ref;
+    const actuel = etat.choix.repas[repas];
+    const deja = actuel?.ref === ref && (actuel.origine === "reste") === (el.dataset.origine === "reste");
     if ($("#tiroir").open) $("#tiroir").close();
     enregistrerRepas(repas, deja ? { ref: null } : { ref, origine: el.dataset.origine });
   } else if (action === "vider") enregistrerRepas(repas, { ref: null, commentaire: "", portion: 1 });

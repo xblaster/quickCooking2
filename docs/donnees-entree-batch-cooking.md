@@ -251,6 +251,9 @@ produit ; préfère un plat relié à une fiche, ou une échéance `a_consommer`
 `numero` = la pastille `{N}` de ta fiche semaine (même numérotation que les courses). `plat.ref` = la
 fiche (`null` pour un plat sans fiche, ex. poulet du rôtisseur : il n'aura alors ni macros ni lien
 avec les stocks). `convives` : une clé par personne présente, valeur = lieu (`m`, `bc`, `bf`, `c`).
+Midi qui mange le reste du dîner de la veille : ajoute `"reste_de": "<id du dîner>"` dans `plat`
+(ex. `"reste_de": "mar29-s"`). Le site affiche « ↺ reste du dîner de la veille » sur le midi et
+« cuisiner aussi pour le midi du lendemain » sur le dîner.
 
 **Repas de la période à venir** — les propositions :
 
@@ -268,6 +271,15 @@ avec les stocks). `convives` : une clé par personne présente, valeur = lieu (`
 - `pourquoi` : une ligne, pour la famille (pas de jargon du collège).
 - Repas non négociable (jeudi soir poulet, etc.) : `"impose": { "nom": "Poulet rôti du rôtisseur", "raison": "Danse de Grégoire à 19 h" }` à la place de `options`.
 - `defaut` : `ref` présélectionnée (facultatif).
+- **Reste du dîner de la veille** : sur chaque midi du lundi au vendredi, le site propose en plus de
+  tes options « ↺ reprendre le dîner de la veille » (cuisiner plus la veille au soir, rien à préparer
+  le midi). Il le propose seulement si toutes ces conditions tiennent :
+  1. le dîner de la veille (date − 1) est dans la même période, avec un plat choisi ou imposé (avec `ref`) ;
+  2. au moins un convive du midi ne mange pas à la cantine ;
+  3. la recette se garde au moins 1 jour (`conservation_jours` ≥ 1 ; absent = 3) ;
+  4. aucune alerte bloquante pour les convives du midi (boîte froide → plat `froid`, `evite` de niveau
+     `interdit`, plat banni, mot interdit).
+  Pour l'interdire sur un midi : `"reste_veille": false` dans ce repas.
 
 **Courses (période courante seulement)** :
 
@@ -353,7 +365,9 @@ Envoie **toutes** les fiches de `01_Fiches_Recettes/` (hors `Catalogue`, `Index`
                 "portion": 1, "commentaire": "sans fromage pour G", "par": "P",
                 "appareil": "2fe08784952d3704", "le": "2026-10-05T19:42:06Z" },
     "mer7-s": { "ref": null, "origine": null, "portion": 1, "commentaire": "", "par": null, "le": null },
-    "jeu8-s": { "ref": null, "origine": "impose", "portion": 1, "commentaire": "", "par": null, "le": null }
+    "jeu8-s": { "ref": null, "origine": "impose", "portion": 1, "commentaire": "", "par": null, "le": null },
+    "ven9-m": { "ref": "06_Cookeo_Plats_du_Soir/Golden_Soup", "origine": "reste", "de": "jeu8-s",
+                "portion": 1, "commentaire": "", "par": "J", "appareil": "2fe08784952d3704", "le": "2026-10-05T19:50:00Z" }
   },
   "commentaire_general": "Samedi soir on est invités.",
   "mis_a_jour": "2026-10-05T19:42:06Z"
@@ -362,7 +376,13 @@ Envoie **toutes** les fiches de `01_Fiches_Recettes/` (hors `Catalogue`, `Index`
 
 - **Toutes** les clés de `periode_a_venir.repas` sont présentes.
 - `origine` : `option` (une de tes propositions), `recherche` (remplacement choisi dans la base),
-  `impose`, `null` (pas choisi : à toi de trancher, en commençant par ta recommandation).
+  `reste` (reprend le dîner de la veille, voir ci-dessous), `impose`, `null` (pas choisi : à toi de
+  trancher, en commençant par ta recommandation).
+- `origine: "reste"` : `de` = id du dîner de la veille, `ref` = sa recette (le site la tient à jour si
+  le dîner change, et annule le reste s'il n'est plus possible). À toi : **augmenter le dîner `de`**
+  d'autant de parts que de convives du midi hors cantine (`convives` ≠ `c`), préparer les boîtes le
+  soir même (`bc` chaude à réchauffer, `bf` froide), et dans la nouvelle `periode_courante` mettre
+  `"plat": { "ref": …, "nom": …, "reste_de": "<de>" }` sur ce midi. Aucune course en plus pour le midi.
 - `portion` : 0,75 légère, 1 normale, 1,25 copieuse. `commentaire` : à appliquer ou à discuter.
 - `statut` : `termine` quand la famille a cliqué « On a fini de choisir » ; `brouillon` sinon.
 - Un remplacement (`recherche`) n'a pas été délibéré par ton collège : repasse-le dans ta checklist
@@ -379,6 +399,7 @@ Ensuite : Temps 2 de ton skill (fiche semaine, courses), puis envoi de la nouvel
 - [ ] Chaque `ref` (plats, options, imposés, défaut) existe dans `recettes`.
 - [ ] Chaque jour a une `date` ; chaque repas un `jour` existant, un `moment`, des `convives`.
 - [ ] Période à venir : 1 à 5 `options` (5 conseillées) par repas non imposé, la recommandation en premier.
+- [ ] Choix relus : chaque midi `origine: "reste"` augmente le dîner `de` (parts hors cantine) et devient `plat.reste_de` dans la nouvelle période courante.
 - [ ] Les articles de stock ont des `mots` ; les produits frais ont `entre_le` et `perissable` ; les
       `dlc` sont celles lues sur les emballages, jamais estimées.
 - [ ] Les produits à consommer absolument sont couverts par un repas prévu avant leur échéance,

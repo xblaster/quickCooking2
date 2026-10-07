@@ -43,6 +43,32 @@ export function alertesRecette(r, repas, { foyer, preferences }) {
 }
 
 /**
+ * Un midi de semaine peut-il reprendre le dîner de la veille (cuisiner plus la veille au soir) ?
+ * plats : { [repasId]: { ref } }. Retour : null si sans objet, sinon
+ * { possible, raison?, de, veille, ref, recette, mangeurs }.
+ */
+export function resteVeille(repas, { periode, plats, index, foyer, preferences }) {
+  if (repas.moment !== "midi" || repas.impose || repas.reste_veille === false) return null;
+  const jour = periode.jours.find((j) => j.id === repas.jour);
+  if (!jour?.date) return null;
+  const js = dateLocale(jour.date).getDay();
+  if (js === 0 || js === 6) return null;
+  const mangeurs = Object.values(repas.convives || {}).filter((l) => l !== "c").length;
+  if (!mangeurs) return null;
+  const veille = periode.jours.find((j) => j.date && ecartJours(j.date, jour.date) === 1);
+  const soir = veille && periode.repas.find((r) => r.jour === veille.id && r.moment === "soir");
+  if (!soir) return null;
+  const ref = soir.impose?.ref ?? plats[soir.id]?.ref ?? null;
+  const recette = ref ? index.get(ref) ?? null : null;
+  const base = { de: soir.id, veille, ref, recette, mangeurs };
+  if (!recette) return { ...base, possible: false, raison: "Choisissez d'abord le dîner de la veille" };
+  if ((recette.conservation_jours ?? 3) < 1) return { ...base, possible: false, raison: "Ne se garde pas jusqu'au lendemain" };
+  const bloquant = alertesRecette(recette, repas, { foyer, preferences }).find((a) => a.niveau === "interdit");
+  if (bloquant) return { ...base, possible: false, raison: bloquant.texte };
+  return { ...base, possible: true };
+}
+
+/**
  * Évalue une période.
  * plats : { [repasId]: { ref, portion } } — la recette retenue pour chaque repas (ou absente).
  * Retour : { parRepas: {id: alertes[]}, parJour: {jourId: {code: {...}}}, bilan: alertes[] }

@@ -79,6 +79,40 @@ test("écritures concurrentes sur deux repas : aucune perdue", async () => {
   for (const r of libres) assert.equal(c.repas[r.id].ref, r.options[0].ref);
 });
 
+test("reste du dîner de la veille : midi de semaine, suit le dîner, annulé s'il disparaît", async () => {
+  const p = exemple.periode_a_venir;
+  const url = (id) => `/api/choix/${p.id}/repas/${id}`;
+  const soir = p.repas.find((r) => r.id === "dim11-s");
+  // Un dîner dont le reste convient au midi du lundi (boîte chaude de J, P à la maison).
+  let ref = null;
+  for (const o of soir.options) {
+    assert.equal((await put(url(soir.id), { ref: o.ref, origine: "option" })).status, 200);
+    if ((await put(url("lun12-m"), { origine: "reste", ref: "ignoree" })).status === 200) {
+      ref = o.ref;
+      break;
+    }
+  }
+  assert.ok(ref, "au moins une option du dimanche soir peut servir le lundi midi");
+  let c = await (await fetch2(`/api/choix/${p.id}`)).json();
+  assert.deepEqual([c.repas["lun12-m"].ref, c.repas["lun12-m"].origine, c.repas["lun12-m"].de], [ref, "reste", "dim11-s"]);
+
+  // Le dîner change : le midi suit (ou est annulé si le nouveau plat ne convient pas).
+  const autre = soir.options.find((o) => o.ref !== ref).ref;
+  c = await (await put(url(soir.id), { ref: autre, origine: "option" })).json();
+  assert.ok(c.repas["lun12-m"].ref === autre || c.repas["lun12-m"].ref === null);
+
+  // Plus de dîner : plus de reste.
+  c = await (await put(url(soir.id), { ref: null })).json();
+  assert.equal(c.repas["lun12-m"].ref, null);
+  assert.equal(c.repas["lun12-m"].origine, null);
+  const refus = await put(url("lun12-m"), { origine: "reste", ref });
+  assert.equal(refus.status, 400);
+  assert.match((await refus.json()).erreur, /dîner de la veille/);
+
+  // Week-end : jamais proposé.
+  assert.equal((await put(url("sam10-m"), { origine: "reste", ref })).status, 400);
+});
+
 test("dépôt d'export : jeton obligatoire, validation", async () => {
   assert.equal((await put("/api/export", exemple)).status, 401);
   assert.equal((await put("/api/export", { format: "x" }, { Authorization: "Bearer jeton-test" })).status, 400);

@@ -6,6 +6,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { gzipSync } from "node:zlib";
 import { avertissementsExport, refsIntrouvables, SECTIONS, validerExport, validerMajPeriode, validerMajRepas } from "./lib/contrat.mjs";
+import { indexRecettes, resteVeille } from "./public/js/regles.js";
 import { changerStatut, identifier, lister, MODE, peutUtiliser, renommer, STATUTS } from "./lib/appareils.mjs";
 import { DATA_DIR, ecrireExport, lireChoix, lireCourses, lireExport, modifierChoix, modifierCourses, modifierExport } from "./lib/stockage.mjs";
 
@@ -68,6 +69,20 @@ function lireCorps(req, limite) {
 function estAdmin(req) {
   const [type, jeton] = (req.headers.authorization || "").split(" ");
   return Boolean(IMPORT_TOKEN) && type === "Bearer" && Boolean(jeton) && egal(jeton, IMPORT_TOKEN);
+}
+
+/** Les midis « reste de la veille » suivent le dîner de la veille ; s'il n'est plus possible, le choix est annulé. */
+function suivreRestes(c, ctx) {
+  for (const r of ctx.periode.repas) {
+    const actuel = c.repas[r.id];
+    if (actuel?.origine !== "reste") continue;
+    const rv = resteVeille(r, ctx);
+    if (rv?.possible) Object.assign(actuel, { ref: rv.ref, de: rv.de });
+    else {
+      Object.assign(actuel, { ref: null, origine: null });
+      delete actuel.de;
+    }
+  }
 }
 
 /** Identifiants des cases de la liste de courses de la période courante. */
@@ -236,14 +251,24 @@ async function api(req, res, url) {
       const def = p.repas.find((r) => r.id === m[3]);
       if (!def) return json(res, 404, { erreur: "Repas inconnu." });
       if (p.statut === "close") return json(res, 409, { erreur: "Les choix sont clos pour cette période." });
-      const refs = new Set(exp.donnees.recettes.map((r) => r.ref));
-      const { valeur, erreur } = validerMajRepas(await lireCorps(req, LIMITE_CHOIX), def, refs);
-      if (erreur) return json(res, 400, { erreur });
+      const index = indexRecettes(exp.donnees.recettes);
+      const corps = await lireCorps(req, LIMITE_CHOIX);
+      let erreur = null;
       const choix = await modifierChoix(p, genereLe, (c) => {
-        c.repas[def.id] = { ...valeur, appareil: appareil?.id ?? null, le: new Date().toISOString() };
+        const ctx = { periode: p, plats: c.repas, index, foyer: exp.donnees.foyer, preferences: exp.donnees.preferences };
+        // Reste du dîner de la veille : la recette est celle de la veille, calculée ici.
+        if (corps?.origine === "reste" && corps.ref !== null) {
+          const rv = resteVeille(def, ctx);
+          if (!rv?.possible) return (erreur = rv?.raison ?? "Ce midi ne peut pas reprendre le dîner de la veille."), false;
+          Object.assign(corps, { ref: rv.ref, de: rv.de });
+        }
+        const v = validerMajRepas(corps, def, new Set(index.keys()));
+        if (v.erreur) return (erreur = v.erreur), false;
+        c.repas[def.id] = { ...v.valeur, appareil: appareil?.id ?? null, le: new Date().toISOString() };
         c.export_genere_le = genereLe;
+        suivreRestes(c, ctx);
       });
-      return json(res, 200, choix);
+      return erreur ? json(res, 400, { erreur }) : json(res, 200, choix);
     }
   }
   return json(res, 404, { erreur: "Route inconnue." });

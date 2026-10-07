@@ -331,6 +331,9 @@ body.avec-dock main { padding-bottom: calc(var(--dock-h, 150px) + 24px); }
 .option .option-meta { gap: 2px 8px; }
 .option .badge { font-size: .64rem; padding: 0 .4rem; }
 .option .chiffres { font-size: .7rem; gap: 7px; }
+.option-reste .option-bouton { border-style: dashed; }
+.option-reste.indisponible { padding: 2px 8px; font-size: .75rem; }
+.reste { color: var(--accent); }
 .option .option-alerte { font-size: .7rem; padding: .05rem .4rem; justify-self: start; }
 .pourquoi { font-size: .85rem; color: var(--discret); }
 .option-meta { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; }

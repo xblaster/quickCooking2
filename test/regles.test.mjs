@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { rendreMarkdown } from "../public/js/markdown.js";
 import { chercher } from "../public/js/recherche.js";
-import { alertesRecette, evaluerPeriode, indexRecettes } from "../public/js/regles.js";
+import { alertesRecette, evaluerPeriode, indexRecettes, resteVeille } from "../public/js/regles.js";
 import { normaliser } from "../public/js/outils.js";
 
 const exemple = JSON.parse(readFileSync(new URL("../exemple/export.json", import.meta.url), "utf8"));
@@ -160,4 +160,32 @@ test("à consommer : date limite, ancienneté, échéance imposée, repas avant 
   assert.deepEqual(repasAvantEcheance(epinards, "2026-10-07", { periode: per, plats, index: idx }), []);
   const res = chercher([{ ref: "x", nom: "X", ingredients: [{ item: "epinards" }], drapeaux: {} }, { ref: "y", nom: "Y", ingredients: [], drapeaux: {} }], { urgent: true }, { aConsommer: [epinards] });
   assert.deepEqual(res.map((r) => r.r.ref), ["x"]);
+});
+
+test("reste de la veille : midi de semaine seulement, recette compatible et qui se garde", () => {
+  const periode = {
+    jours: [
+      { id: "lun", date: "2026-10-12", label: "Lundi 12" },
+      { id: "mar", date: "2026-10-13", label: "Mardi 13" },
+      { id: "sam", date: "2026-10-17", label: "Samedi 17" },
+    ],
+    repas: [
+      { id: "lun-s", jour: "lun", moment: "soir", convives: { J: "m", G: "m" } },
+      { id: "mar-m", jour: "mar", moment: "midi", convives: { J: "bc", G: "m" } },
+      { id: "mar-mbf", jour: "mar", moment: "midi", convives: { J: "bf", G: "c" } },
+      { id: "sam-m", jour: "sam", moment: "midi", convives: { J: "m", G: "m" } },
+    ],
+  };
+  const index = indexRecettes([R("chaud"), R("lentilles", { lentilles: true }), R("frais", {}, { conservation_jours: 0 })]);
+  const ctx = (ref) => ({ periode, plats: ref ? { "lun-s": { ref } } : {}, index, foyer, preferences });
+  const midi = (id) => periode.repas.find((r) => r.id === id);
+
+  const ok = resteVeille(midi("mar-m"), ctx("chaud"));
+  assert.deepEqual([ok.possible, ok.ref, ok.de, ok.mangeurs], [true, "chaud", "lun-s", 2]);
+  assert.match(resteVeille(midi("mar-m"), ctx(null)).raison, /Choisissez/);
+  assert.equal(resteVeille(midi("mar-m"), ctx("lentilles")).possible, false, "G évite les lentilles");
+  assert.equal(resteVeille(midi("mar-m"), ctx("frais")).possible, false, "ne se garde pas");
+  assert.equal(resteVeille(midi("mar-mbf"), ctx("chaud")).possible, false, "boîte froide : plat froid exigé");
+  assert.equal(resteVeille(midi("sam-m"), ctx("chaud")), null, "week-end");
+  assert.equal(resteVeille({ ...midi("mar-m"), reste_veille: false }, ctx("chaud")), null, "interdit par l'export");
 });
