@@ -30,7 +30,7 @@ spec:
       containers:
         - name: quick-cooking
           # Tag daté AAAAMMJJ-<sha7> poussé par la CI. JAMAIS :latest.
-          image: xblaster/quick-cooking:REMPLACER-PAR-LE-TAG
+          image: xblaster/quick-cooking:20261007-99d4307
           ports:
             - name: http
               containerPort: 80
@@ -46,9 +46,9 @@ spec:
               value: libre
           # Secret (créé à la main, voir docs/deploiement.md §6) :
           #   IMPORT_TOKEN  — jeton d'administration : dépôt de l'export, autorisation des appareils
-          # envFrom:
-          #   - secretRef:
-          #       name: quick-cooking-secrets
+          envFrom:
+            - secretRef:
+                name: quick-cooking-secrets
           readinessProbe:
             httpGet:
               path: /healthz
