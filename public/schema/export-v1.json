@@ -1,0 +1,283 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quick-cooking.lo2k.net/schema/export-v1.json",
+  "title": "Quick Cooking — export « batch cooking » v1",
+  "description": "Données envoyées par le projet « batch cooking » au site familial. Voir docs/donnees-entree-batch-cooking.md.",
+  "type": "object",
+  "required": ["format", "version", "genere_le", "foyer", "preferences", "periode_courante", "recettes"],
+  "properties": {
+    "format": { "const": "quick-cooking/export" },
+    "version": { "const": 1 },
+    "genere_le": { "type": "string", "format": "date-time" },
+    "source": { "type": "string" },
+    "foyer": { "$ref": "#/$defs/foyer" },
+    "preferences": { "$ref": "#/$defs/preferences" },
+    "stocks": { "$ref": "#/$defs/stocks" },
+    "periode_courante": { "$ref": "#/$defs/periode" },
+    "periode_a_venir": { "oneOf": [{ "$ref": "#/$defs/periode" }, { "type": "null" }] },
+    "recettes": { "type": "array", "items": { "$ref": "#/$defs/recette" } }
+  },
+  "$defs": {
+    "date": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+    "id": { "type": "string", "pattern": "^[A-Za-z0-9_.-]{1,80}$" },
+    "code": { "enum": ["J", "P", "G"] },
+    "lieu_repas": { "enum": ["m", "bc", "bf", "c"] },
+    "niveau": { "enum": ["info", "attention", "interdit"] },
+    "macros": {
+      "type": "object",
+      "properties": {
+        "kcal": { "type": "number" }, "prot": { "type": "number" }, "gluc": { "type": "number" },
+        "lip": { "type": "number" }, "fibres": { "type": "number" }
+      },
+      "required": ["kcal", "prot"]
+    },
+    "foyer": {
+      "type": "object",
+      "required": ["personnes"],
+      "properties": {
+        "personnes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["code", "nom", "proteines_cible", "proteines_plafond"],
+            "properties": {
+              "code": { "$ref": "#/$defs/code" },
+              "nom": { "type": "string" },
+              "role": { "type": "string" },
+              "socle": { "$ref": "#/$defs/macros" },
+              "socle_libelle": { "type": "string" },
+              "socle_proteines": { "type": "number" },
+              "proteines_cible": { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 },
+              "proteines_plafond": { "type": "number" },
+              "kcal_cible": { "type": "number" },
+              "fibres_min": { "type": "number" },
+              "ratio_soir": { "type": "number" },
+              "evite": {
+                "type": "array",
+                "items": {
+                  "type": "object", "required": ["drapeau", "niveau", "libelle"],
+                  "properties": { "drapeau": { "type": "string" }, "niveau": { "$ref": "#/$defs/niveau" }, "libelle": { "type": "string" } }
+                }
+              }
+            }
+          }
+        },
+        "lieux": { "type": "object", "additionalProperties": { "type": "string" } },
+        "cantine_estimee": { "type": "number" },
+        "cantine_macros": { "$ref": "#/$defs/macros" }
+      }
+    },
+    "preferences": {
+      "type": "object",
+      "properties": {
+        "saison": { "enum": ["Printemps", "Été", "Automne", "Hiver"] },
+        "regles": {
+          "type": "array",
+          "items": { "type": "object", "required": ["libelle", "niveau"], "properties": { "id": { "type": "string" }, "libelle": { "type": "string" }, "niveau": { "$ref": "#/$defs/niveau" } } }
+        },
+        "limites_periode": {
+          "type": "array",
+          "items": { "type": "object", "required": ["drapeau", "max", "libelle"], "properties": { "drapeau": { "type": "string" }, "max": { "type": "integer" }, "libelle": { "type": "string" } } }
+        },
+        "poisson_par_semaine": { "type": "integer" },
+        "mots_interdits": { "type": "array", "items": { "type": "string" } },
+        "seuils_stocks": {
+          "type": "object",
+          "properties": {
+            "dlc_urgent": { "type": "integer" }, "dlc_bientot": { "type": "integer" },
+            "anciennete_bientot": { "type": "integer" }, "anciennete_urgent": { "type": "integer" }
+          }
+        }
+      }
+    },
+    "stocks": {
+      "type": "object",
+      "required": ["articles"],
+      "properties": {
+        "mis_a_jour_le": { "type": "object", "additionalProperties": { "type": ["string", "null"] } },
+        "articles": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "nom", "lieu"],
+            "properties": {
+              "id": { "type": "string" },
+              "nom": { "type": "string" },
+              "lieu": { "enum": ["frigo", "congelateur", "cellier"] },
+              "categorie": { "type": ["string", "null"] },
+              "quantite": { "type": "string" },
+              "note": { "type": ["string", "null"] },
+              "prioritaire": { "type": "boolean" },
+              "mots": { "type": "array", "items": { "type": "string" } },
+              "dlc": { "oneOf": [{ "$ref": "#/$defs/date" }, { "type": "null" }] },
+              "entre_le": { "oneOf": [{ "$ref": "#/$defs/date" }, { "type": "null" }] },
+              "perissable": { "type": "boolean" },
+              "a_consommer": {
+                "oneOf": [
+                  { "type": "null" },
+                  {
+                    "type": "object", "required": ["avant"],
+                    "properties": { "avant": { "$ref": "#/$defs/date" }, "raison": { "type": "string" }, "niveau": { "enum": ["urgent", "bientot"] } }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "periode": {
+      "type": "object",
+      "required": ["id", "titre", "jours", "repas"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "titre": { "type": "string" },
+        "debut": { "$ref": "#/$defs/date" },
+        "fin": { "$ref": "#/$defs/date" },
+        "statut": { "enum": ["validee", "en_choix", "close"] },
+        "date_limite_choix": { "type": "string", "format": "date-time" },
+        "note": { "type": "string" },
+        "poissons_deja": { "type": "object", "additionalProperties": { "type": "integer" } },
+        "jours": {
+          "type": "array",
+          "items": {
+            "type": "object", "required": ["id", "date", "label"],
+            "properties": {
+              "id": { "$ref": "#/$defs/id" }, "date": { "$ref": "#/$defs/date" }, "label": { "type": "string" },
+              "semaine": { "type": "string", "pattern": "^S\\d{2}$" }, "agenda": { "type": "array", "items": { "type": "string" } }
+            }
+          }
+        },
+        "repas": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "jour", "moment", "convives"],
+            "properties": {
+              "id": { "$ref": "#/$defs/id" },
+              "jour": { "$ref": "#/$defs/id" },
+              "moment": { "enum": ["midi", "soir"] },
+              "convives": { "type": "object", "propertyNames": { "$ref": "#/$defs/code" }, "additionalProperties": { "$ref": "#/$defs/lieu_repas" } },
+              "numero": { "type": "integer" },
+              "plat": {
+                "type": "object", "required": ["nom"],
+                "properties": { "ref": { "type": ["string", "null"] }, "nom": { "type": "string" }, "portion": { "enum": [0.75, 1, 1.25] }, "note": { "type": "string" } }
+              },
+              "impose": {
+                "type": "object", "required": ["nom"],
+                "properties": { "ref": { "type": ["string", "null"] }, "nom": { "type": "string" }, "raison": { "type": "string" } }
+              },
+              "besoin": { "type": "string" },
+              "defaut": { "type": ["string", "null"] },
+              "options": {
+                "type": "array", "maxItems": 3,
+                "items": {
+                  "type": "object", "required": ["ref"],
+                  "properties": { "ref": { "type": "string" }, "pourquoi": { "type": "string" }, "etiquette": { "type": "string" } }
+                }
+              }
+            }
+          }
+        },
+        "courses": {
+          "type": "object",
+          "properties": {
+            "note": { "type": "string" },
+            "a_verifier": {
+              "type": "array",
+              "items": {
+                "type": "object", "required": ["id", "libelle"],
+                "properties": { "id": { "type": "string" }, "libelle": { "type": "string" }, "pour": { "type": "array", "items": { "type": "integer" } }, "sinon": { "type": "string" } }
+              }
+            },
+            "passages": {
+              "type": "array",
+              "items": {
+                "type": "object", "required": ["id", "libelle", "sections"],
+                "properties": {
+                  "id": { "type": "string" }, "libelle": { "type": "string" }, "date": { "$ref": "#/$defs/date" },
+                  "sections": {
+                    "type": "array",
+                    "items": {
+                      "type": "object", "required": ["titre", "articles"],
+                      "properties": {
+                        "titre": { "type": "string" },
+                        "articles": {
+                          "type": "array",
+                          "items": {
+                            "type": "object", "required": ["id", "libelle"],
+                            "properties": {
+                              "id": { "type": "string" }, "libelle": { "type": "string" }, "quantite": { "type": "string" },
+                              "pour": { "type": "array", "items": { "type": "integer" } }, "note": { "type": "string" }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "deja_maison": {
+              "type": "array",
+              "items": {
+                "type": "object", "required": ["produit"],
+                "properties": { "produit": { "type": "string" }, "ou": { "type": "string" }, "pour": { "type": "array", "items": { "type": "integer" } } }
+              }
+            }
+          }
+        }
+      }
+    },
+    "recette": {
+      "type": "object",
+      "required": ["ref", "nom", "portions", "macros", "drapeaux"],
+      "properties": {
+        "ref": { "type": "string" },
+        "nom": { "type": "string" },
+        "source": {
+          "type": "object",
+          "properties": { "libelle": { "type": "string" }, "livre": { "type": ["string", "null"] }, "page": { "type": ["integer", "string", "null"] }, "url": { "type": ["string", "null"] } }
+        },
+        "categorie": { "type": "string" },
+        "type_plat": { "type": ["string", "null"] },
+        "portions": { "type": "number" },
+        "conservation_jours": { "type": ["integer", "null"] },
+        "congelable": { "type": "boolean" },
+        "temps": { "type": "object", "properties": { "actif": { "type": "integer" }, "autonome": { "type": "integer" }, "total": { "type": "integer" } } },
+        "materiel": { "type": "array", "items": { "type": "string" } },
+        "appareils": { "type": "array", "items": { "type": "string" } },
+        "format": { "type": "string" },
+        "saisons": { "type": "array", "items": { "type": "string" } },
+        "proteines": { "type": "array", "items": { "type": "string" } },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "ingredients": {
+          "type": "array",
+          "items": {
+            "type": "object", "required": ["item"],
+            "properties": { "item": { "type": "string" }, "qte": { "type": ["number", "string"] }, "unite": { "type": "string" }, "usage": { "type": "string" } }
+          }
+        },
+        "ingredients_cles": { "type": "array", "items": { "type": "string" } },
+        "macros": { "$ref": "#/$defs/macros" },
+        "couverture": { "type": "number", "minimum": 0, "maximum": 1 },
+        "drapeaux": {
+          "type": "object",
+          "required": ["type"],
+          "properties": {
+            "type": { "enum": ["viande", "poisson", "vege"] },
+            "poisson_gras": { "type": "boolean" }, "boeuf": { "type": "boolean" }, "lentilles": { "type": "boolean" },
+            "curry": { "type": "boolean" }, "pdt": { "type": "boolean" }, "froid": { "type": "boolean" }, "soupe": { "type": "boolean" }
+          }
+        },
+        "historique": {
+          "type": "object",
+          "properties": { "deja_cuisinee": { "type": "boolean" }, "semaines": { "type": "array", "items": { "type": "string" } } }
+        },
+        "avis": { "enum": [null, "coup_de_coeur", "banni", "ajuster"] },
+        "avis_note": { "type": "string" },
+        "contenu_md": { "type": "string" }
+      }
+    }
+  }
+}

@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quick Cooking</title>
+  <meta name="description" content="Les menus de la famille : la semaine en cours, les courses et le choix des repas à venir.">
+  <meta name="theme-color" content="#F6F1E7" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#1B1A17" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="js/app.js"></script>
+</head>
+<body>
+  <a class="evitement" href="#vue">Aller au contenu</a>
+  <header class="entete">
+    <div class="entete-haut">
+      <a class="marque" href="#/"><span class="marque-logo" aria-hidden="true">QC</span> Quick Cooking</a>
+      <div class="moi" id="moi" role="group" aria-label="Qui êtes-vous ?"></div>
+    </div>
+    <nav class="nav" aria-label="Sections">
+      <a href="#/semaine" data-route="semaine">Cette semaine</a>
+      <a href="#/courses" data-route="courses">Courses</a>
+      <a href="#/choisir" data-route="choisir">À choisir <span class="nav-compteur" id="nav-compteur"></span></a>
+      <a href="#/recettes" data-route="recettes">Recettes</a>
+    </nav>
+  </header>
+
+  <div class="page">
+    <main id="vue" tabindex="-1" aria-live="polite">
+      <p class="chargement">Chargement des menus…</p>
+    </main>
+    <aside id="cote" class="cote" aria-label="Macros de la journée et stocks" hidden></aside>
+  </div>
+
+  <div id="dock" class="dock" role="region" aria-label="Jauges de la journée" hidden></div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <dialog id="fiche" class="fenetre" aria-labelledby="fiche-titre">
+    <div class="fenetre-corps" id="fiche-corps"></div>
+  </dialog>
+
+  <dialog id="tiroir" class="fenetre tiroir" aria-labelledby="tiroir-titre">
+    <div class="fenetre-corps" id="tiroir-corps"></div>
+  </dialog>
+
+  <noscript><p class="chargement">Ce site a besoin de JavaScript.</p></noscript>
+</body>
+</html>

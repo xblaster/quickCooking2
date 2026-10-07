@@ -1,0 +1,19 @@
+# Quick Cooking — petit volume pour les fichiers JSON de DATA_DIR (export, choix, courses, appareils).
+# Quelques centaines de Ko au plus ; 1 Gi est le minimum pratique chez OVH Cinder.
+# ATTENTION : reclaim policy Delete — supprimer ce PVC ou le namespace efface les données (AGENTS.md règle 7).
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: quick-cooking-data
+  namespace: quick-cooking
+  labels:
+    app: quick-cooking
+    app.kubernetes.io/name: quick-cooking
+    app.kubernetes.io/part-of: quick-cooking-platform
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: csi-cinder-high-speed
+  resources:
+    requests:
+      storage: 1Gi

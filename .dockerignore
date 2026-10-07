@@ -1,0 +1,12 @@
+.git
+.github
+.claude
+.agents
+openspec
+deploy
+docs
+outils
+test
+data
+node_modules
+*.md

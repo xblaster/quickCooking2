@@ -1,0 +1,13 @@
+{
+  "name": "quick-cooking",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Menus de la famille : semaine en cours, courses, choix de la période à venir.",
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "start": "node server.mjs",
+    "dev": "node --watch server.mjs --port 3000",
+    "test": "node --test \"test/*.test.mjs\""
+  }
+}

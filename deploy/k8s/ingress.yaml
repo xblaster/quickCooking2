@@ -1,0 +1,27 @@
+# Entrée publique : Cloudflare (TLS) -> ingress-nginx 146.59.242.169 -> Service.
+# ssl-redirect reste à "false" : Cloudflare termine le TLS, une redirection ici bouclerait.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: quick-cooking-ingress
+  namespace: quick-cooking
+  labels:
+    app.kubernetes.io/name: quick-cooking
+    app.kubernetes.io/part-of: quick-cooking-platform
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/proxy-body-size: 50m
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: quick-cooking.lo2k.net
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: quick-cooking-service
+                port:
+                  number: 80

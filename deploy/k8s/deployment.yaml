@@ -1,0 +1,78 @@
+# Quick Cooking — application (voir docs/deploiement.md §1 pour le contrat de l'image)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: quick-cooking
+  namespace: quick-cooking
+  labels:
+    app: quick-cooking
+    app.kubernetes.io/name: quick-cooking
+    app.kubernetes.io/component: frontend
+    app.kubernetes.io/part-of: quick-cooking-platform
+spec:
+  # Un seul pod : le volume RWO ne se monte que sur un pod, et les JSON n'ont qu'un écrivain.
+  replicas: 1
+  revisionHistoryLimit: 5
+  selector:
+    matchLabels:
+      app: quick-cooking
+  # Recreate : l'ancien pod libère le volume avant que le nouveau démarre (courte coupure).
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: quick-cooking
+        app.kubernetes.io/name: quick-cooking
+        app.kubernetes.io/component: frontend
+        app.kubernetes.io/part-of: quick-cooking-platform
+    spec:
+      containers:
+        - name: quick-cooking
+          # Tag daté AAAAMMJJ-<sha7> poussé par la CI. JAMAIS :latest.
+          image: xblaster/quick-cooking:REMPLACER-PAR-LE-TAG
+          ports:
+            - name: http
+              containerPort: 80
+          env:
+            - name: NODE_ENV
+              value: production
+            # Fichiers JSON (export, choix, courses, appareils) sur le volume quick-cooking-data.
+            - name: DATA_DIR
+              value: /app/data
+            # libre : tout appareil peut utiliser le site (il est seulement enregistré).
+            # autorises : seuls les appareils autorisés par l'administrateur (voir README.md).
+            - name: APPAREILS_MODE
+              value: libre
+          # Secret (créé à la main, voir docs/deploiement.md §6) :
+          #   IMPORT_TOKEN  — jeton d'administration : dépôt de l'export, autorisation des appareils
+          # envFrom:
+          #   - secretRef:
+          #       name: quick-cooking-secrets
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 20
+            failureThreshold: 3
+          volumeMounts:
+            - name: donnees
+              mountPath: /app/data
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+      volumes:
+        - name: donnees
+          persistentVolumeClaim:
+            claimName: quick-cooking-data

@@ -1,0 +1,72 @@
+# Accès restreint pour le déploiement automatique depuis GitHub Actions (docs/deploiement.md §5).
+# À appliquer par un humain, une seule fois :
+#   kubectl apply --dry-run=server -f deploy/k8s/optionnel/ci-rbac.yaml
+#   kubectl apply -f deploy/k8s/optionnel/ci-rbac.yaml
+#
+# Générer le kubeconfig de ce compte (à mettre dans le secret GitHub KUBECONFIG_QUICK_COOKING,
+# JAMAIS dans le dépôt) :
+#   TOKEN=$(kubectl -n quick-cooking get secret quick-cooking-deployer-token -o jsonpath='{.data.token}' | base64 -d)
+#   CA=$(kubectl config view --raw --minify -o jsonpath='{.clusters[0].cluster.certificate-authority-data}')
+#   cat > kubeconfig-ci.yaml <<EOF
+#   apiVersion: v1
+#   kind: Config
+#   clusters:
+#     - name: catwo
+#       cluster: {server: https://hujp6a.c1.sbg5.k8s.ovh.net, certificate-authority-data: $CA}
+#   users:
+#     - name: quick-cooking-deployer
+#       user: {token: $TOKEN}
+#   contexts:
+#     - name: quick-cooking
+#       context: {cluster: catwo, user: quick-cooking-deployer, namespace: quick-cooking}
+#   current-context: quick-cooking
+#   EOF
+#   # copier son contenu dans GitHub, puis supprimer le fichier local :
+#   rm kubeconfig-ci.yaml
+#
+# Révocation : kubectl -n quick-cooking delete secret quick-cooking-deployer-token  (confirmation humaine)
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: quick-cooking-deployer
+  namespace: quick-cooking
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: quick-cooking-deployer-token
+  namespace: quick-cooking
+  annotations:
+    kubernetes.io/service-account.name: quick-cooking-deployer
+type: kubernetes.io/service-account-token
+---
+# Droits limités au namespace quick-cooking : changer l'image du Deployment et suivre le rollout.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: quick-cooking-deployer
+  namespace: quick-cooking
+rules:
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "list", "watch", "patch", "update"]
+  - apiGroups: ["apps"]
+    resources: ["replicasets"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: quick-cooking-deployer
+  namespace: quick-cooking
+subjects:
+  - kind: ServiceAccount
+    name: quick-cooking-deployer
+    namespace: quick-cooking
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: quick-cooking-deployer

@@ -1,0 +1,47 @@
+schema: spec-driven
+
+context: |
+  Artefacts rédigés en français.
+  Cible de déploiement imposée : cluster Kubernetes OVH `catwo`, namespace `quick-cooking`,
+  URL https://quick-cooking.lo2k.net (TLS par Cloudflare, ingress-nginx classe `nginx`).
+  L'application est livrée en UNE image Docker `xblaster/quick-cooking:<AAAAMMJJ-sha7>` (linux/amd64),
+  HTTP sur le port 80, répond 200 sur GET /, sans état par défaut, 2 réplicas, max 256 Mi / 0,2 CPU.
+  Contrat complet, build, déploiement et rollback : AGENTS.md et docs/deploiement.md.
+  Toute persistance (PVC RWO, reclaim Delete) ou base de données doit être décidée dans la proposition.
+  Aucun secret dans le dépôt ; LLM gratuits uniquement.
+
+rules:
+  tasks:
+    - Inclure les tâches de build de l'image et de mise à jour de deploy/k8s/ quand le changement touche le runtime.
+    - Le déploiement réel sur le cluster est une tâche distincte, à valider par un humain.
+
+# Project context (optional)
+# Add only constraints that should guide OpenSpec artifacts and workflows.
+# Include constraints an agent cannot infer by reading the code.
+# Keep general project documentation and discoverable codebase facts out.
+# Example:
+#   context: |
+#     Designs and tasks must cover Windows, macOS, and Linux
+#     Write all artifacts in Spanish
+
+# Per-artifact rules (optional)
+# Add custom rules for specific artifacts.
+# Example:
+#   rules:
+#     proposal:
+#       - Keep proposals under 500 words
+#       - Always state what is out of scope
+#     tasks:
+#       - Break tasks into chunks of max 2 hours
+
+# Per-operation guidance (optional)
+# Add advisory guidance for how apply and archive work should be conducted.
+# This is separate from artifact rules above.
+# Example:
+#   operations:
+#     apply:
+#       guidance:
+#         - Keep test summaries concise
+#     archive:
+#       guidance:
+#         - Summarize the archive outcome before finishing
