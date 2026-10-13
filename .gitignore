@@ -1,3 +1,8 @@
 node_modules/
 data/
 *.tmp
+
+# Impeccable : captures et maquettes de travail (régénérables)
+.impeccable/review/
+.impeccable/mocks/
+.impeccable/live/

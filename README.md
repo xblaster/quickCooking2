@@ -11,10 +11,15 @@ Site familial (`https://quick-cooking.lo2k.net`) pour :
   protéines, saison, froid, jamais cuisinée, coups de cœur), portion et remarque ; contrôles
   d'équilibre en direct ; bouton « On a fini de choisir ».
 
-Toujours affiché (colonne de droite sur ordinateur, barre en bas sur téléphone) : les **macros de la
-journée** par personne (petit-déjeuner et Skyr compris, suit le jour à l'écran, flèches ‹ ›) et les
-**stocks** frigo / congélateur / cellier, avec les repas qui les utilisent et les produits à finir
-sans plat prévu. Toucher un produit ouvre les recettes qui l'utilisent.
+L'accueil affiche le **prochain repas** en grand (moment, numéro, plat, qui mange où, bouton vers la
+recette), puis les repas suivants ; il signale un menu terminé. La fiche recette s'ouvre en **mode
+cuisine** : ingrédients et étapes d'abord, en grand, option « Garder l'écran allumé » ; le reste de la
+fiche est replié.
+
+Au second plan, sur Semaine et À choisir : une ligne en bas de l'écran donne les **protéines du jour**
+par personne (flèches pour changer de jour) ; la toucher ouvre le détail des **macros** (petit-déjeuner
+et Skyr compris) et les **stocks** frigo / congélateur / cellier, avec les repas qui les utilisent et les
+produits à finir sans plat prévu. Toucher un produit ouvre les recettes qui l'utilisent.
 
 Le site **ne compose pas** les menus. « batch cooking » les décide et lui envoie un export JSON ;
 le site lui rend les choix de la famille. Contrat complet : [`docs/donnees-entree-batch-cooking.md`](docs/donnees-entree-batch-cooking.md) (guide destiné à l'IA de « batch cooking », API d'envoi comprise).

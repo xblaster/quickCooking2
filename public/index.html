@@ -2,15 +2,14 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Quick Cooking</title>
-  <meta name="description" content="Les menus de la famille : la semaine en cours, les courses et le choix des repas à venir.">
-  <meta name="theme-color" content="#F6F1E7" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#1B1A17" media="(prefers-color-scheme: dark)">
+  <meta name="description" content="Les menus de la famille : le prochain repas, la semaine en cours, les courses et le choix des repas à venir.">
+  <meta name="theme-color" content="#0A1F44">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600;800&display=swap">
   <link rel="stylesheet" href="style.css">
   <script type="module" src="js/app.js"></script>
 </head>
@@ -18,29 +17,38 @@
   <a class="evitement" href="#vue">Aller au contenu</a>
   <header class="entete">
     <div class="entete-haut">
-      <a class="marque" href="#/"><span class="marque-logo" aria-hidden="true">QC</span> Quick Cooking</a>
+      <a class="marque" href="#/" aria-label="Quick Cooking, prochain repas"><span class="marque-logo" aria-hidden="true">QC</span><span class="marque-nom">Quick Cooking</span></a>
+      <nav class="nav" aria-label="Sections">
+        <a href="#/" data-route="">Prochain repas</a>
+        <a href="#/semaine" data-route="semaine">Semaine</a>
+        <a href="#/courses" data-route="courses">Courses</a>
+        <a href="#/choisir" data-route="choisir">À choisir <span class="nav-compteur" id="nav-compteur"></span></a>
+        <a href="#/recettes" data-route="recettes">Recettes</a>
+      </nav>
       <div class="moi" id="moi" role="group" aria-label="Qui êtes-vous ?"></div>
     </div>
-    <nav class="nav" aria-label="Sections">
-      <a href="#/semaine" data-route="semaine">Cette semaine</a>
-      <a href="#/courses" data-route="courses">Courses</a>
-      <a href="#/choisir" data-route="choisir">À choisir <span class="nav-compteur" id="nav-compteur"></span></a>
-      <a href="#/recettes" data-route="recettes">Recettes</a>
-    </nav>
   </header>
 
   <div class="page">
-    <main id="vue" tabindex="-1" aria-live="polite">
+    <main id="vue" tabindex="-1">
       <p class="chargement">Chargement des menus…</p>
     </main>
-    <aside id="cote" class="cote" aria-label="Macros de la journée et stocks" hidden></aside>
+    <aside id="cote" class="cote" aria-label="Repères de la journée et stocks" hidden></aside>
   </div>
 
-  <div id="dock" class="dock" role="region" aria-label="Jauges de la journée" hidden></div>
+  <div id="dock" class="dock" role="region" aria-label="Repères de la journée" hidden></div>
+
+  <nav class="onglets-bas" aria-label="Sections">
+    <a href="#/" data-route="">Ce soir</a>
+    <a href="#/semaine" data-route="semaine">Semaine</a>
+    <a href="#/courses" data-route="courses">Courses</a>
+    <a href="#/choisir" data-route="choisir">Choisir <span class="nav-compteur" id="nav-compteur-bas"></span></a>
+    <a href="#/recettes" data-route="recettes">Recettes</a>
+  </nav>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <dialog id="fiche" class="fenetre" aria-labelledby="fiche-titre">
+  <dialog id="fiche" class="fenetre fiche" aria-labelledby="fiche-titre">
     <div class="fenetre-corps" id="fiche-corps"></div>
   </dialog>
 

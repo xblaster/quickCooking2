@@ -1,0 +1,599 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-13T21:21:53.388Z",
+  "title": "Design System: Quick Cooking",
+  "extensions": {
+    "colorMeta": {
+      "quai": {
+        "role": "primary",
+        "displayName": "Bleu nuit de quai",
+        "canonical": "oklch(24.7% 0.075 260)",
+        "tonalRamp": [
+          "#00072A",
+          "#0D2248",
+          "#283F67",
+          "#455E88",
+          "#6981AA",
+          "#90A6CB",
+          "#B8CCEC",
+          "#DFF0FF"
+        ]
+      },
+      "quai-2": {
+        "role": "primary",
+        "displayName": "Bleu de voie",
+        "canonical": "oklch(37.7% 0.108 260)",
+        "tonalRamp": [
+          "#000135",
+          "#011F57",
+          "#1C3D78",
+          "#395C9A",
+          "#5C80BE",
+          "#84A5DE",
+          "#AECCFE",
+          "#D6F0FF"
+        ]
+      },
+      "quai-texte": {
+        "role": "neutral",
+        "displayName": "Blanc de caractères",
+        "canonical": "oklch(97.3% 0.006 264)",
+        "tonalRamp": [
+          "#0A0B0E",
+          "#232427",
+          "#3E4043",
+          "#5C5E61",
+          "#7E8084",
+          "#A3A5A8",
+          "#C9CACE",
+          "#ECEEF2"
+        ]
+      },
+      "quai-discret": {
+        "role": "neutral",
+        "displayName": "Bleu brume",
+        "canonical": "oklch(82.4% 0.037 262)",
+        "tonalRamp": [
+          "#050B19",
+          "#1B2436",
+          "#354053",
+          "#535E73",
+          "#758197",
+          "#99A5BC",
+          "#BECBE3",
+          "#E2EFFF"
+        ]
+      },
+      "signal": {
+        "role": "secondary",
+        "displayName": "Jaune signal",
+        "canonical": "oklch(85.7% 0.165 86)",
+        "tonalRamp": [
+          "#170700",
+          "#361F00",
+          "#583A00",
+          "#7C5700",
+          "#A57800",
+          "#D19B00",
+          "#F9C222",
+          "#FFE657"
+        ]
+      },
+      "fond": {
+        "role": "neutral",
+        "displayName": "Fond de hall",
+        "canonical": "oklch(96.0% 0.009 258)",
+        "tonalRamp": [
+          "#090B0F",
+          "#212429",
+          "#3D4045",
+          "#5A5E63",
+          "#7D8086",
+          "#A1A5AA",
+          "#C7CBD1",
+          "#EBEFF5"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Surface",
+        "canonical": "oklch(100.0% 0.000 89)",
+        "tonalRamp": [
+          "#0B0B0B",
+          "#242424",
+          "#404040",
+          "#5D5D5D",
+          "#808080",
+          "#A4A4A4",
+          "#CACACA",
+          "#EEEEEE"
+        ]
+      },
+      "surface-2": {
+        "role": "neutral",
+        "displayName": "Surface appuyée",
+        "canonical": "oklch(92.9% 0.017 259)",
+        "tonalRamp": [
+          "#070B12",
+          "#1F242C",
+          "#3B4049",
+          "#585E67",
+          "#7A818A",
+          "#9EA5AF",
+          "#C4CBD6",
+          "#E8EFFA"
+        ]
+      },
+      "discret": {
+        "role": "neutral",
+        "displayName": "Bleu discret",
+        "canonical": "oklch(44.8% 0.078 262)",
+        "tonalRamp": [
+          "#00062A",
+          "#0E2249",
+          "#293F69",
+          "#465D8A",
+          "#6780AF",
+          "#8BA5D5",
+          "#B3CBF7",
+          "#DAEFFF"
+        ]
+      },
+      "filet": {
+        "role": "neutral",
+        "displayName": "Filet",
+        "canonical": "oklch(86.5% 0.028 263)",
+        "tonalRamp": [
+          "#060B17",
+          "#1D2432",
+          "#38404F",
+          "#555E6E",
+          "#778092",
+          "#9BA5B7",
+          "#C1CBDE",
+          "#E5EFFF"
+        ]
+      },
+      "ok": {
+        "role": "tertiary",
+        "displayName": "Vert ok",
+        "canonical": "oklch(47.9% 0.103 155)",
+        "tonalRamp": [
+          "#001400",
+          "#00310B",
+          "#004F26",
+          "#1F6E43",
+          "#479265",
+          "#70B78A",
+          "#9DDCB2",
+          "#C8FED9"
+        ]
+      },
+      "ok-fond": {
+        "role": "tertiary",
+        "displayName": "Fond ok",
+        "canonical": "oklch(93.8% 0.025 160)",
+        "tonalRamp": [
+          "#030E08",
+          "#192820",
+          "#34443B",
+          "#526259",
+          "#74857B",
+          "#98AA9F",
+          "#BDD0C5",
+          "#E1F4E9"
+        ]
+      },
+      "attention": {
+        "role": "tertiary",
+        "displayName": "Ambre attention",
+        "canonical": "oklch(46.4% 0.099 73)",
+        "tonalRamp": [
+          "#1F0100",
+          "#3F1800",
+          "#5E3500",
+          "#7F5308",
+          "#A47636",
+          "#C89C60",
+          "#EBC38F",
+          "#FFE8BA"
+        ]
+      },
+      "attention-fond": {
+        "role": "tertiary",
+        "displayName": "Fond attention",
+        "canonical": "oklch(94.3% 0.056 88)",
+        "tonalRamp": [
+          "#110A00",
+          "#2C230D",
+          "#493F24",
+          "#695C3C",
+          "#8E7F59",
+          "#B3A37C",
+          "#DAC9A1",
+          "#FEEDC4"
+        ]
+      },
+      "interdit": {
+        "role": "tertiary",
+        "displayName": "Rouge interdit",
+        "canonical": "oklch(46.8% 0.166 28)",
+        "tonalRamp": [
+          "#300000",
+          "#580000",
+          "#820000",
+          "#A7271F",
+          "#D05044",
+          "#F17E6F",
+          "#FFAB9C",
+          "#FFD4C6"
+        ]
+      },
+      "interdit-fond": {
+        "role": "tertiary",
+        "displayName": "Fond interdit",
+        "canonical": "oklch(91.8% 0.034 24)",
+        "tonalRamp": [
+          "#150706",
+          "#321E1C",
+          "#503937",
+          "#705754",
+          "#947976",
+          "#B99D9A",
+          "#E0C3C0",
+          "#FFE6E3"
+        ]
+      },
+      "info-fond": {
+        "role": "tertiary",
+        "displayName": "Fond info",
+        "canonical": "oklch(92.2% 0.024 259)",
+        "tonalRamp": [
+          "#060B15",
+          "#1D2430",
+          "#38404D",
+          "#565E6C",
+          "#78818F",
+          "#9CA5B4",
+          "#C1CBDB",
+          "#E5EFFF"
+        ]
+      },
+      "viande": {
+        "role": "tertiary",
+        "displayName": "Brun viande",
+        "canonical": "oklch(48.5% 0.107 49)",
+        "tonalRamp": [
+          "#250000",
+          "#480A00",
+          "#6A2900",
+          "#8C491D",
+          "#B36C42",
+          "#D89169",
+          "#FBBA96",
+          "#FFE0C1"
+        ]
+      },
+      "poisson": {
+        "role": "tertiary",
+        "displayName": "Bleu-vert poisson",
+        "canonical": "oklch(47.1% 0.082 221)",
+        "tonalRamp": [
+          "#000F21",
+          "#002B40",
+          "#00485E",
+          "#15687F",
+          "#418BA3",
+          "#67B0C9",
+          "#96D6EC",
+          "#C1F9FF"
+        ]
+      },
+      "vege": {
+        "role": "tertiary",
+        "displayName": "Vert végé",
+        "canonical": "oklch(47.8% 0.118 135)",
+        "tonalRamp": [
+          "#001200",
+          "#032E00",
+          "#1F4C00",
+          "#3E6C1F",
+          "#609044",
+          "#86B46D",
+          "#B0D99A",
+          "#D7FCC4"
+        ]
+      },
+      "signal-texte": {
+        "role": "secondary",
+        "displayName": "Texte sur signal",
+        "note": "Alias de quai (#0A1F44)."
+      },
+      "texte": {
+        "role": "neutral",
+        "displayName": "Texte",
+        "note": "Alias de quai en clair ; #EAF0FA en sombre."
+      },
+      "filet-fort": {
+        "role": "neutral",
+        "displayName": "Filet fort",
+        "note": "Alias de quai en clair ; #A9B8D6 en sombre."
+      },
+      "lien": {
+        "role": "primary",
+        "displayName": "Lien",
+        "note": "Alias de quai-2 en clair ; #9DC0FF en sombre."
+      },
+      "info": {
+        "role": "tertiary",
+        "displayName": "Bleu info",
+        "note": "Alias de quai-2 en clair ; #9DC0FF en sombre."
+      }
+    },
+    "themes": {
+      "sombre": {
+        "trigger": "@media (prefers-color-scheme: dark) :root:not([data-theme=\"light\"]), et :root[data-theme=\"dark\"]",
+        "colors": {
+          "quai": "#030B1E",
+          "quai-2": "#1B3566",
+          "quai-texte": "#F4F6FA",
+          "quai-discret": "#A9B8D6",
+          "fond": "#07152F",
+          "surface": "#0C1D3F",
+          "surface-2": "#132A55",
+          "texte": "#EAF0FA",
+          "discret": "#A9B8D6",
+          "filet": "#22396A",
+          "filet-fort": "#A9B8D6",
+          "lien": "#9DC0FF",
+          "ok": "#7FD8A4",
+          "ok-fond": "#12341F",
+          "attention": "#F2C35B",
+          "attention-fond": "#3A2C0B",
+          "interdit": "#FF9B91",
+          "interdit-fond": "#45181A",
+          "info": "#9DC0FF",
+          "info-fond": "#142B55",
+          "viande": "#E0A57A",
+          "poisson": "#74CBE2",
+          "vege": "#A8D57E"
+        },
+        "notes": "Le jaune signal ne change pas. Le bouton principal s'inverse (fond quai-texte, texte #0A1F44) ; la barre de progression passe en quai-texte."
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Affichage",
+        "purpose": "Nom du plat du prochain repas, dans le panneau. 24ch max, text-wrap: balance."
+      },
+      "headline": {
+        "displayName": "Moment",
+        "purpose": "Moment du prochain repas (« Ce soir »), en jaune signal."
+      },
+      "headline-page": {
+        "displayName": "Titre de page",
+        "purpose": "h1 des vues Semaine, Courses, À choisir, Recettes."
+      },
+      "title": {
+        "displayName": "Titre de section",
+        "purpose": "h2 de section ; 1.4rem pour les jours de la semaine."
+      },
+      "depart": {
+        "displayName": "Ligne de départ",
+        "purpose": "Nom du plat dans une ligne de départ ; 400 quand le repas est passé."
+      },
+      "body": {
+        "displayName": "Texte",
+        "purpose": "Texte courant, 17px, chiffres tabulaires."
+      },
+      "body-cuisine": {
+        "displayName": "Mode cuisine",
+        "purpose": "Corps de la fiche recette, lu à un mètre."
+      },
+      "label": {
+        "displayName": "Repère",
+        "purpose": "Qui · où, compteurs, liens d'action, champs."
+      },
+      "pastille": {
+        "displayName": "Pastille {N}",
+        "purpose": "Numéro du plat dans sa pastille."
+      }
+    },
+    "shadows": [
+      {
+        "name": "fenetre",
+        "value": "0 24px 64px rgb(3 11 30 / 40%)",
+        "purpose": "Fiche recette et tiroir (dialog). Voile rgb(3 11 30 / 60%)."
+      },
+      {
+        "name": "panneau-reperes",
+        "value": "0 -12px 32px rgb(10 31 68 / 18%)",
+        "purpose": "Panneau macros + stocks au-dessus de la ligne des repères."
+      },
+      {
+        "name": "message",
+        "value": "0 8px 24px rgb(3 11 30 / 25%)",
+        "purpose": "Toast d'état."
+      }
+    ],
+    "focus": {
+      "value": "outline: 3px solid var(--texte); outline-offset: 2px; box-shadow: 0 0 0 6px var(--surface)",
+      "surQuai": "outline-color: var(--quai-texte); box-shadow: none"
+    },
+    "motion": [
+      {
+        "name": "ease",
+        "value": "cubic-bezier(.16, 1, .3, 1)",
+        "purpose": "Courbe unique de toutes les transitions et animations."
+      },
+      {
+        "name": "volet",
+        "value": "0.62s, décalage 70ms par ligne, perspective(600px) rotateX(-78deg) → none, opacité .25 → 1, flou 1px → 0",
+        "purpose": "Geste signature : les lignes du panneau basculent comme des volets à l'affichage."
+      },
+      {
+        "name": "monte",
+        "value": "0.38s, translateY(18px) → none, opacité 0 → 1",
+        "purpose": "Ouverture des fenêtres."
+      },
+      {
+        "name": "etat",
+        "value": "0.2s",
+        "purpose": "Fond et contour des boutons et options."
+      },
+      {
+        "name": "reduit",
+        "value": "prefers-reduced-motion: reduce → aucune transition ni animation",
+        "purpose": "Obligatoire."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "etroit",
+        "value": "430px",
+        "purpose": "Ligne des repères compacte."
+      },
+      {
+        "name": "telephone",
+        "value": "560px",
+        "purpose": "Ligne de départ resserrée, nom de marque masqué."
+      },
+      {
+        "name": "fenetre-plein-ecran",
+        "value": "640px",
+        "purpose": "Fiche recette plein écran en dessous."
+      },
+      {
+        "name": "bureau",
+        "value": "1000px",
+        "purpose": "Navigation dans l'en-tête, colonnes, ligne des repères en bas d'écran."
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Panneau du prochain repas",
+      "kind": "custom",
+      "refersTo": "tableau",
+      "description": "Le départ imminent : moment en jaune, pastille signal, plat en très grand, qui mange où, action Recette.",
+      "html": "<section class=\"ds-tableau\"><div class=\"ds-tableau-tete\"><h2 class=\"ds-tableau-moment\">Ce soir</h2><span class=\"ds-pastille ds-pastille-signal\">3</span><span class=\"ds-tableau-jour\">Vendredi 2 oct.</span></div><p class=\"ds-tableau-plat\">Restes de poulet, salade d'endives</p><ul class=\"ds-tableau-qui\"><li><b>J</b>à la maison</li><li><b>P</b>boîte froide</li><li><b>G</b>à la maison</li></ul><button type=\"button\" class=\"ds-bouton-signal\">Ouvrir la recette</button></section>",
+      "css": ".ds-tableau{background:var(--quai,#0A1F44);color:var(--quai-texte,#F4F6FA);border-radius:12px;padding:20px 20px 22px;font-family:'Atkinson Hyperlegible Next',system-ui,sans-serif;font-variant-numeric:tabular-nums}.ds-tableau-tete{display:flex;align-items:center;gap:14px;flex-wrap:wrap}.ds-tableau-moment{margin:0;font-size:2.2rem;font-weight:800;color:#FFC72C}.ds-tableau-jour{color:var(--quai-discret,#B9C6DE);font-weight:600}.ds-tableau-plat{margin:14px 0 0;font-size:2.4rem;font-weight:800;line-height:1.08;letter-spacing:-.02em;max-width:24ch}.ds-tableau-qui{list-style:none;margin:18px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));border-top:1px solid var(--quai-2,#1E3F7A)}.ds-tableau-qui li{padding:12px 12px 0 0;color:var(--quai-discret,#B9C6DE)}.ds-tableau-qui b{display:block;color:var(--quai-texte,#F4F6FA);font-size:1.5rem}.ds-pastille{display:inline-grid;place-items:center;min-width:40px;height:40px;padding:0 8px;border-radius:999px;border:2.5px solid currentColor;font-weight:800;font-size:1.05rem;line-height:1}.ds-pastille-signal{min-width:56px;height:56px;font-size:1.6rem;background:#FFC72C;border-color:#FFC72C;color:#0A1F44}.ds-bouton-signal{margin-top:20px;display:inline-flex;align-items:center;min-height:56px;padding:.7rem 1.4rem;border-radius:10px;border:2px solid #FFC72C;background:#FFC72C;color:#0A1F44;font:inherit;font-weight:800;font-size:1.1rem;cursor:pointer;transition:transform .2s cubic-bezier(.16,1,.3,1)}.ds-bouton-signal:active{transform:translateY(1px)}.ds-bouton-signal:focus-visible{outline:3px solid #F4F6FA;outline-offset:2px}"
+    },
+    {
+      "name": "Ligne de départ",
+      "kind": "custom",
+      "refersTo": "depart",
+      "description": "Un repas par ligne : quand, pastille, plat, qui · où, sous un filet. Passé = poinçonné.",
+      "html": "<ul class=\"ds-departs\"><li class=\"ds-depart\"><span class=\"ds-quand\">Demain<small>midi</small></span><span class=\"ds-pastille\">35</span><div><p class=\"ds-plat\">Pizza maison jambon-champignons</p><p class=\"ds-qui\"><b>J P G</b> à la maison</p></div></li><li class=\"ds-depart ds-passe\"><span class=\"ds-quand\">Jeudi<small>soir</small></span><span class=\"ds-pastille\">2</span><div><p class=\"ds-plat\">Velouté de courgettes</p><p class=\"ds-qui\"><b>J P G</b> à la maison · passé</p></div></li></ul>",
+      "css": ".ds-departs{list-style:none;margin:0;padding:0;border-top:2px solid var(--filet-fort,#0A1F44);font-family:'Atkinson Hyperlegible Next',system-ui,sans-serif;color:var(--texte,#0A1F44)}.ds-depart{display:grid;grid-template-columns:4.6rem 48px minmax(0,1fr);gap:4px 14px;align-items:start;padding:14px 0;border-bottom:1px solid var(--filet,#C9D3E6)}.ds-quand{font-weight:800;font-size:1.05rem;line-height:1.2;padding-top:8px}.ds-quand small{display:block;font-weight:600;font-size:.85rem;color:var(--discret,#3D5480)}.ds-pastille{display:inline-grid;place-items:center;min-width:40px;height:40px;padding:0 8px;border-radius:999px;border:2.5px solid var(--texte,#0A1F44);font-weight:800;font-size:1.05rem;line-height:1}.ds-plat{margin:0;padding-top:6px;font-size:1.15rem;font-weight:600;line-height:1.3}.ds-qui{margin:4px 0 0;color:var(--discret,#3D5480);font-size:.95rem}.ds-qui b{color:var(--texte,#0A1F44)}.ds-passe{color:var(--discret,#3D5480)}.ds-passe .ds-plat{font-weight:400}.ds-passe .ds-pastille{border-color:var(--filet,#C9D3E6);color:var(--discret,#3D5480)}"
+    },
+    {
+      "name": "Bouton principal",
+      "kind": "button",
+      "refersTo": "bouton",
+      "description": "Action courante, plein bleu nuit.",
+      "html": "<button type=\"button\" class=\"ds-bouton\">Choisir les repas</button>",
+      "css": ".ds-bouton{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:.6rem 1.1rem;border-radius:10px;border:2px solid var(--quai,#0A1F44);background:var(--quai,#0A1F44);color:var(--quai-texte,#F4F6FA);font:inherit;font-family:'Atkinson Hyperlegible Next',system-ui,sans-serif;font-weight:800;cursor:pointer;transition:background-color .2s cubic-bezier(.16,1,.3,1),transform .2s cubic-bezier(.16,1,.3,1)}.ds-bouton:active{transform:translateY(1px)}.ds-bouton:focus-visible{outline:3px solid var(--texte,#0A1F44);outline-offset:2px;box-shadow:0 0 0 6px var(--surface,#fff)}"
+    },
+    {
+      "name": "Bouton secondaire",
+      "kind": "button",
+      "refersTo": "bouton-secondaire",
+      "description": "Action secondaire, contour filet fort.",
+      "html": "<button type=\"button\" class=\"ds-bouton-secondaire\">Ouvrir la liste</button>",
+      "css": ".ds-bouton-secondaire{display:inline-flex;align-items:center;min-height:48px;padding:.6rem 1.1rem;border-radius:10px;border:2px solid var(--filet-fort,#0A1F44);background:transparent;color:var(--texte,#0A1F44);font:inherit;font-family:'Atkinson Hyperlegible Next',system-ui,sans-serif;font-weight:800;cursor:pointer;transition:background-color .2s cubic-bezier(.16,1,.3,1)}.ds-bouton-secondaire:hover{background:var(--surface-2,#E1E8F3)}.ds-bouton-secondaire:active{transform:translateY(1px)}.ds-bouton-secondaire:focus-visible{outline:3px solid var(--texte,#0A1F44);outline-offset:2px}"
+    },
+    {
+      "name": "Filtre",
+      "kind": "chip",
+      "refersTo": "filtre",
+      "description": "Pilule de filtre de recherche ; actif = contour fort et fond appuyé.",
+      "html": "<label class=\"ds-filtre\"><input type=\"checkbox\"> Poisson</label><label class=\"ds-filtre ds-actif\"><input type=\"checkbox\" checked> Jamais cuisinée</label>",
+      "css": ".ds-filtre{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:.3rem .85rem;margin:0 6px 6px 0;border:1.5px solid var(--filet,#C9D3E6);border-radius:999px;background:var(--surface,#fff);color:var(--texte,#0A1F44);font-family:'Atkinson Hyperlegible Next',system-ui,sans-serif;font-size:.95rem;cursor:pointer}.ds-filtre input{accent-color:var(--quai,#0A1F44);width:18px;height:18px}.ds-filtre:hover{border-color:var(--filet-fort,#0A1F44)}.ds-filtre:focus-within{outline:3px solid var(--texte,#0A1F44);outline-offset:2px}.ds-actif{border-color:var(--filet-fort,#0A1F44);background:var(--surface-2,#E1E8F3);font-weight:600}"
+    },
+    {
+      "name": "Option de choix",
+      "kind": "custom",
+      "refersTo": "option",
+      "description": "Une proposition pour un repas à venir ; choisie = contour 2.5px et rond plein.",
+      "html": "<button type=\"button\" class=\"ds-option\" aria-pressed=\"true\"><span class=\"ds-rond\"></span><span><span class=\"ds-option-nom\">Wraps au saumon fumé</span><span class=\"ds-pourquoi\">Reste du saumon de mardi</span></span></button><button type=\"button\" class=\"ds-option\" aria-pressed=\"false\"><span class=\"ds-rond\"></span><span><span class=\"ds-option-nom\">Nuggets &amp; frites</span></span></button>",
+      "css": ".ds-option{display:flex;gap:10px;width:100%;margin-bottom:6px;text-align:left;padding:10px 12px;border:1.5px solid var(--filet,#C9D3E6);border-radius:10px;background:var(--surface,#fff);color:var(--texte,#0A1F44);font:inherit;font-family:'Atkinson Hyperlegible Next',system-ui,sans-serif;cursor:pointer;transition:border-color .2s cubic-bezier(.16,1,.3,1),background-color .2s cubic-bezier(.16,1,.3,1)}.ds-option:hover{border-color:var(--filet-fort,#0A1F44)}.ds-option:focus-visible{outline:3px solid var(--texte,#0A1F44);outline-offset:2px}.ds-option[aria-pressed=true]{border:2.5px solid var(--filet-fort,#0A1F44);padding:9px 11px;background:var(--surface-2,#E1E8F3)}.ds-rond{flex:none;width:20px;height:20px;margin-top:2px;border-radius:50%;border:2px solid var(--discret,#3D5480);display:grid;place-items:center}.ds-option[aria-pressed=true] .ds-rond{border-color:var(--texte,#0A1F44)}.ds-option[aria-pressed=true] .ds-rond::after{content:'';width:10px;height:10px;border-radius:50%;background:var(--texte,#0A1F44)}.ds-option-nom{display:block;font-weight:600;font-size:1.02rem}.ds-pourquoi{display:block;font-size:.9rem;font-style:italic;color:var(--discret,#3D5480)}"
+    },
+    {
+      "name": "Champ",
+      "kind": "input",
+      "refersTo": "champ",
+      "description": "Champ de saisie, étiquette au-dessus.",
+      "html": "<label class=\"ds-champ\"><span>Rechercher une recette</span><input type=\"search\" placeholder=\"poulet, courgette…\"></label>",
+      "css": ".ds-champ{display:grid;gap:6px;font-family:'Atkinson Hyperlegible Next',system-ui,sans-serif;font-size:.95rem;color:var(--texte,#0A1F44)}.ds-champ span{color:var(--discret,#3D5480);font-weight:600}.ds-champ input{font:inherit;min-height:48px;padding:.6rem .75rem;border:1.5px solid var(--filet,#C9D3E6);border-radius:10px;background:var(--surface,#fff);color:inherit}.ds-champ input::placeholder{color:var(--discret,#3D5480)}.ds-champ input:focus{border-color:var(--filet-fort,#0A1F44)}.ds-champ input:focus-visible{outline:3px solid var(--texte,#0A1F44);outline-offset:2px}"
+    },
+    {
+      "name": "Barre d'onglets",
+      "kind": "nav",
+      "refersTo": "barre-onglets",
+      "description": "Navigation du téléphone, bleu nuit, onglet actif blanc avec trait haut.",
+      "html": "<nav class=\"ds-onglets\"><a href=\"#\" aria-current=\"page\">Ce soir</a><a href=\"#\">Semaine</a><a href=\"#\">Courses</a><a href=\"#\">Choisir <span class=\"ds-compteur\">12</span></a><a href=\"#\">Recettes</a></nav>",
+      "css": ".ds-onglets{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));background:var(--quai,#0A1F44);font-family:'Atkinson Hyperlegible Next',system-ui,sans-serif;}.ds-onglets a{position:relative;display:flex;align-items:center;justify-content:center;gap:3px;min-height:58px;color:var(--quai-discret,#B9C6DE);text-decoration:none;font-weight:600;font-size:.9rem}.ds-onglets a:hover,.ds-onglets a[aria-current=page]{color:var(--quai-texte,#F4F6FA)}.ds-onglets a[aria-current=page]::after{content:'';position:absolute;top:0;left:22%;right:22%;height:3px;border-radius:0 0 3px 3px;background:var(--quai-texte,#F4F6FA)}.ds-onglets a:focus-visible{outline:3px solid var(--quai-texte,#F4F6FA);outline-offset:-3px}.ds-compteur{display:inline-grid;place-items:center;min-width:1.35em;height:1.35em;padding:0 .35em;border-radius:999px;background:var(--quai-texte,#F4F6FA);color:var(--quai,#0A1F44);font-size:.7rem;font-weight:800}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Le tableau des départs",
+    "overview": "Chaque repas est un départ affiché : moment, numéro, plat, qui, où. L'interface se lit comme le panneau d'une gare ou d'un aéroport, à un mètre, d'un coup d'œil, mains prises. Un panneau bleu nuit porte le prochain repas en très grand ; le reste de la période défile dessous comme la suite des départs, en lignes séparées par des filets. Le jaune signal ne désigne qu'une chose à la fois : ce qui arrive maintenant.\n\nLa densité est celle d'un horaire, pas d'un tableau de bord : pas de cartes, pas de barre latérale, pas de jauges permanentes. Les macros et les stocks restent accessibles mais au second plan, dans une ligne des repères qu'on touche pour l'ouvrir. Les repas passés sont « poinçonnés » : atténués, en graisse normale, avec la mention « passé ». Le monde est engagé et monochrome bleu : tous les neutres sont teintés de bleu nuit, aucun gris d'appoint.\n\nLe geste signature est le panneau du prochain repas, dont les lignes basculent comme des volets à l'affichage (désactivé si l'utilisateur réduit les animations).",
+    "keyCharacteristics": [
+      "Un seul panneau bleu nuit plein, celui du prochain repas ; tout le reste est fond bleu très pâle et filets.",
+      "Jaune signal réservé au prochain repas et au jour en cours.",
+      "Une seule famille, Atkinson Hyperlegible Next, chiffres tabulaires partout, 800 pour l'affichage.",
+      "Plats numérotés en pastilles `{N}` rondes et cerclées, comme sur les fiches imprimées.",
+      "Cibles tactiles de 44 px minimum, 48–56 px pour les actions principales.",
+      "Clair et sombre, tous deux bleu nuit ; sombre suivi par `prefers-color-scheme` et forçable par `data-theme`."
+    ],
+    "rules": [
+      {
+        "name": "La règle du signal unique",
+        "body": "Le jaune signal marque le prochain repas et le jour en cours, et seulement eux. Si deux éléments jaunes non liés au même repas sont visibles, l'un des deux est de trop.",
+        "section": "colors"
+      },
+      {
+        "name": "La règle du bleu sans gris",
+        "body": "Tout neutre est un bleu nuit éclairci ou assombri. Aucun gris pur, aucune couleur d'appoint décorative.",
+        "section": "colors"
+      },
+      {
+        "name": "La règle des trois graisses",
+        "body": "400 pour lire, 600 pour repérer, 800 pour afficher. Pas d'autres graisses, pas d'autre famille, pas de capitales forcées.",
+        "section": "typography"
+      },
+      {
+        "name": "La règle des chiffres alignés",
+        "body": "Les chiffres (heures, quantités, numéros, macros) sont toujours tabulaires.",
+        "section": "typography"
+      },
+      {
+        "name": "La règle du filet unique",
+        "body": "La structure se dessine par filets : filet fort de 2 px (`filet-fort`) en tête de liste ou de section, filet fin de 1 px (`filet`) entre les lignes. Pas de cadres pour grouper, pas de carte dans une carte.",
+        "section": "layout"
+      },
+      {
+        "name": "La règle du plat par défaut",
+        "body": "Rien de ce qui est posé dans la page n'a d'ombre. Seul ce qui recouvre la page en porte une.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** réserver `signal` (#FFC72C) au prochain repas et au jour en cours.",
+      "**Do** structurer par filets : 2 px `filet-fort` en tête, 1 px `filet` entre les lignes.",
+      "**Do** numéroter chaque plat avec sa pastille `{N}` ronde et cerclée, comme sur les fiches imprimées.",
+      "**Do** garder 44 px de cible minimum, 48 px pour un bouton, 56 px pour l'action signal.",
+      "**Do** atténuer les repas passés (texte `discret`, graisse 400, mention « passé ») plutôt que de les masquer.",
+      "**Do** garder les macros et les stocks dans la ligne des repères, ouverte au toucher.",
+      "**Do** couper le basculement des volets et toutes les transitions sous `prefers-reduced-motion: reduce`."
+    ],
+    "donts": [
+      "**Don't** composer en tableau de bord : pas de grille de cartes, pas de barre latérale, pas de jauges permanentes.",
+      "**Don't** mettre une carte dans une carte ni encadrer un groupe que des filets suffisent à séparer.",
+      "**Don't** introduire un gris neutre ou une couleur décorative hors de la palette bleu nuit.",
+      "**Don't** ajouter d'ombre à un élément posé dans la page.",
+      "**Don't** employer une autre famille que Atkinson Hyperlegible Next ni une graisse hors 400 / 600 / 800."
+    ]
+  }
+}

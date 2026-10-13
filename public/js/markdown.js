@@ -12,7 +12,17 @@ function enLigne(s) {
     .replace(/(^|[^*])\*([^*\s][^*]*)\*/g, "$1<em>$2</em>");
 }
 
-const cellules = (ligne) => ligne.trim().replace(/^\||\|$/g, "").split("|").map((c) => c.trim());
+const ENCADRES = {
+  NOTE: ["info", "À savoir"],
+  INFO: ["info", "À savoir"],
+  TIP: ["ok", "Astuce"],
+  IMPORTANT: ["attention", "Important"],
+  WARNING: ["attention", "Attention"],
+  CAUTION: ["interdit", "Prudence"],
+  DANGER: ["interdit", "Danger"],
+};
+
+const cellules =(ligne) => ligne.trim().replace(/^\||\|$/g, "").split("|").map((c) => c.trim());
 
 export function rendreMarkdown(md) {
   const lignes = String(md || "").replace(/\r/g, "").split("\n");
@@ -24,7 +34,8 @@ export function rendreMarkdown(md) {
     let m;
     if ((m = l.match(/^(#{1,6})\s+(.*)/))) {
       const n = Math.min(m[1].length + 2, 6);
-      out.push(`<h${n}>${enLigne(m[2])}</h${n}>`);
+      // Les pictogrammes en tête de titre (🛒, 🧑‍🍳…) sont retirés : le titre parle seul.
+      out.push(`<h${n}>${enLigne(m[2].replace(/^[\p{Extended_Pictographic}‍️\s]+/u, ""))}</h${n}>`);
       i++;
     } else if (l.trim().startsWith("|") && /^\s*\|?\s*:?-{2,}/.test(lignes[i + 1] || "")) {
       const tete = cellules(l);
@@ -36,7 +47,13 @@ export function rendreMarkdown(md) {
     } else if (/^\s*>/.test(l)) {
       const bloc = [];
       while (i < lignes.length && /^\s*>/.test(lignes[i])) bloc.push(lignes[i++].replace(/^\s*>\s?/, ""));
-      out.push(`<blockquote>${rendreMarkdown(bloc.join("\n"))}</blockquote>`);
+      // Encadrés façon GitHub : > [!WARNING], > [!TIP]…
+      const enc = bloc[0]?.match(/^\s*\[!(\w+)\]\s*(.*)$/);
+      if (enc) {
+        const [classe, titre] = ENCADRES[enc[1].toUpperCase()] || ENCADRES.NOTE;
+        const reste = [enc[2], ...bloc.slice(1)].join("\n");
+        out.push(`<aside class="encadre ${classe}"><strong class="encadre-titre">${titre}</strong>${rendreMarkdown(reste)}</aside>`);
+      } else out.push(`<blockquote>${rendreMarkdown(bloc.join("\n"))}</blockquote>`);
     } else if (/^\s*([-*+]|\d+[.)])\s+/.test(l)) {
       const ordonnee = /^\s*\d/.test(l);
       const items = [];
