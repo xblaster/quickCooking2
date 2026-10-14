@@ -2,7 +2,7 @@
 import { rendreMarkdown } from "./markdown.js";
 import { appareilsConnus, chercher, CRITERES_VIDES } from "./recherche.js";
 import { alertesRecette, articlesAConsommer, evaluerPeriode, indexRecettes, macrosParJour, pire, repasAvantEcheance, resteVeille, usageStocks } from "./regles.js";
-import { arrondi, dateLocale, esc, isoDuJour, LIBELLE_MOMENT, LIBELLE_TYPE, normaliser } from "./outils.js";
+import { arrondi, couleurPastille, dateLocale, esc, isoDuJour, LIBELLE_MOMENT, LIBELLE_TYPE, motifPastille, normaliser } from "./outils.js";
 
 const $ = (sel, racine = document) => racine.querySelector(sel);
 const vue = $("#vue");
@@ -177,7 +177,7 @@ function chiffres(r, portion = 1) {
   const m = r.macros;
   const incomplet = typeof r.couverture === "number" && r.couverture < 0.7;
   return `<span class="chiffres${incomplet ? " incomplet" : ""}" title="Par portion${incomplet ? " — macros incomplètes" : ""}">
-    <span><b>${arrondi(m.prot * portion)}</b> g prot.</span><span>${arrondi(m.kcal * portion)} kcal</span>${
+    <span><b>${arrondi(m.prot * portion)}</b> g de protéines</span><span>${arrondi(m.kcal * portion)} kcal</span>${
       r.temps?.total ? `<span>${r.temps.total} min</span>` : ""}</span>`;
 }
 
@@ -202,8 +202,11 @@ function barresProteines(parPersonne) {
   return `<div class="proteines" aria-label="Protéines de la journée">${items.join("")}</div>`;
 }
 
+/** Couleur et motif d'anneau propres au numéro : on retrouve un plat d'un coup d'œil, même sans voir les couleurs. */
+const teinte = (n) => `style="--c:${couleurPastille(n)}" data-motif="${motifPastille(n)}"`;
+
 function pastille(n, classe = "") {
-  return n == null ? "" : `<span class="pastille${classe ? ` ${classe}` : ""}" role="img" aria-label="plat numéro ${n}">${n}</span>`;
+  return n == null ? "" : `<span class="pastille${classe ? ` ${classe}` : ""}" ${teinte(n)} role="img" aria-label="plat numéro ${n}">${n}</span>`;
 }
 
 const boutonFiche = (ref, libelle = "Recette", numero = null) =>
@@ -290,11 +293,18 @@ function tableauProchain(x) {
     <div class="tableau-tete volet"><h2 class="tableau-moment" id="tableau-titre">${esc(quand(x))}</h2>${pastille(x.numero, "signal")}<span class="tableau-jour">${esc(x.j.label)}</span></div>
     <p class="tableau-plat volet">${esc(x.nom ?? "À choisir")}</p>
     ${notes.length || agendaJour.length ? `<p class="tableau-note volet">${[...notes, ...agendaJour].map(esc).join(" · ")}</p>` : ""}
+    ${typeDuPlat(x)}
     <ul class="tableau-qui volet" aria-label="Qui mange où">${quiOu(x.r.convives)}</ul>
     <div class="tableau-actions volet">
       ${x.ref && etat.index.has(x.ref) ? `<button type="button" class="bouton signal" data-action="fiche" data-ref="${esc(x.ref)}"${x.numero != null ? ` data-numero="${x.numero}"` : ""}>Ouvrir la recette</button>` : ""}
     </div>
   </section>`;
+}
+
+/** Type du plat (viande, poisson, végétarien) : texte + teinte, jamais la couleur seule. */
+function typeDuPlat(x) {
+  const t = x.ref ? etat.index.get(x.ref)?.drapeaux?.type : null;
+  return t && LIBELLE_TYPE[t] ? `<span class="badge type-${t}">${LIBELLE_TYPE[t]}</span>` : "";
 }
 
 /** Une ligne de départ : moment, numéro, plat, qui mange où. */
@@ -308,6 +318,7 @@ function ligneDepart(x, { prochain = false, jourVisible = true, details = "" } =
     <div class="depart-plat">
       <p class="plat-nom">${esc(x.nom ?? "À choisir")}</p>
       <p class="depart-qui">${convivesTexte(x.r.convives)}</p>
+      ${typeDuPlat(x)}
       ${details}
     </div>
   </li>`;
@@ -335,7 +346,7 @@ function vueAccueil() {
     </section>`;
   }
   const courses = c?.courses ? `<section class="etat-ligne" aria-labelledby="t-courses"><h2 id="t-courses">Courses</h2>${resumeCourses(c)}<a class="bouton secondaire" href="#/courses">Ouvrir la liste</a></section>` : "";
-  return `<div class="accueil">
+  return `<h1 class="visuellement-cache">Quick Cooking : prochain repas</h1><div class="accueil">
       ${tableauProchain(prochain)}
       ${departs.length ? `<section aria-labelledby="t-ensuite"><div class="section-tete"><h2 id="t-ensuite">Ensuite</h2><a class="lien" href="#/semaine">Toute la semaine</a></div>
         <ol class="departs">${departs.map((x) => ligneDepart(x)).join("")}</ol></section>` : ""}
@@ -367,6 +378,12 @@ function vueAttente(a) {
     ${formulaireAppareil(a)}</section>`;
 }
 
+/** Numéros du jour dans la bande de date : on repère d'un coup d'œil quels plats tombent ce jour-là. */
+function platsDuJour(repas) {
+  const nums = [...new Set(repas.map((r) => r.numero).filter((n) => n != null))];
+  return nums.length ? `<span class="jour-plats">${nums.map((n) => pastille(n, "petite")).join("")}</span>` : "";
+}
+
 // ---------- Vue : semaine en cours ----------
 function vueSemaine() {
   const p = periodeCourante();
@@ -381,7 +398,7 @@ function vueSemaine() {
     <div class="jours">${p.jours.map((j) => {
       const repas = p.repas.filter((r) => r.jour === j.id).sort(parMoment);
       return `<section class="jour${j.date === aujourdHui ? " aujourdhui" : ""}" id="jour-${esc(j.id)}" aria-labelledby="t-${esc(j.id)}">
-        <div class="jour-tete"><h2 id="t-${esc(j.id)}">${esc(j.label)}</h2>${j.date === aujourdHui ? '<span class="marque-jour">aujourd\'hui</span>' : ""}</div>
+        <div class="jour-tete${j.date === aujourdHui ? " aujourdhui" : ""}"><h2 id="t-${esc(j.id)}">${esc(j.label)}</h2>${j.date === aujourdHui ? '<span class="marque-jour">aujourd\'hui</span>' : ""}${platsDuJour(repas)}</div>
         ${agenda(j)}
         <ol class="departs">${repas.map((r) => {
           const rec = etat.index.get(r.plat?.ref);
@@ -396,8 +413,8 @@ function vueSemaine() {
           const x = { r, j, nom: r.plat?.nom ?? "—", numero: r.numero };
           return ligneDepart(x, { prochain: r.id === prochainId, jourVisible: false, details: notes });
         }).join("")}</ol>
-        ${evalu.parJour[j.id] ? `<details class="reperes-jour"><summary>Repères protéines du jour</summary>${barresProteines(evalu.parJour[j.id])}
-          <p class="discret petit">* Estimé (cantine ou plat sans fiche). Des repères, pas des consignes.</p></details>` : ""}
+        ${evalu.parJour[j.id] ? `<details class="reperes-jour"><summary>Protéines du jour</summary>${barresProteines(evalu.parJour[j.id])}
+          <p class="discret petit">* Estimation : repas à la cantine ou plat sans fiche. Des repères, pas des consignes.</p></details>` : ""}
       </section>`;
     }).join("")}</div>`;
 }
@@ -439,7 +456,7 @@ function nomsPlats(numeros) {
   const html = (numeros || [])
     .map((n) => {
       const r = p.repas.find((x) => x.numero === n);
-      return `<span class="pastille petite" role="img" title="${esc(r?.plat?.nom ?? "")}" aria-label="plat ${n}${r?.plat?.nom ? ` : ${esc(r.plat.nom)}` : ""}">${n}</span>`;
+      return `<span class="pastille petite" ${teinte(n)} role="img" title="${esc(r?.plat?.nom ?? "")}" aria-label="plat ${n}${r?.plat?.nom ? ` : ${esc(r.plat.nom)}` : ""}">${n}</span>`;
     })
     .join("");
   return html ? `<span class="pour">${html}</span>` : "";
@@ -502,7 +519,7 @@ function vueChoisir() {
       return `<section class="jour choisir-jour" id="jour-${esc(j.id)}" aria-labelledby="t-${esc(j.id)}">
         <div class="jour-tete"><h2 id="t-${esc(j.id)}">${esc(j.label)}</h2></div>${agenda(j)}
         <div class="jour-repas">${repas.map((r) => carteChoixRepas(p, r, evalu, ouvert)).join("")}</div>
-        ${evalu.parJour[j.id] ? `<details class="reperes-jour"><summary>Repères protéines du jour</summary>${barresProteines(evalu.parJour[j.id])}</details>` : ""}</section>`;
+        ${evalu.parJour[j.id] ? `<details class="reperes-jour"><summary>Protéines du jour</summary>${barresProteines(evalu.parJour[j.id])}</details>` : ""}</section>`;
     }).join("")}</div>
     <section class="fin-choix">
       <h2>Un mot pour la préparation ?</h2>
@@ -774,7 +791,7 @@ function ouvrirFiche(ref, numero = null) {
   const ingredients = !r.contenu_md && r.ingredients?.length
     ? `<h3>Ingrédients</h3><ul>${r.ingredients.map((i) => `<li>${esc([i.qte, i.unite, i.item].filter((x) => x != null && x !== "").join(" "))}</li>`).join("")}</ul>`
     : "";
-  $("#fiche-corps").innerHTML = `<div class="fenetre-tete"><div class="fiche-titre">${numero != null && numero !== "" ? pastille(numero, "signal") : ""}<h2 id="fiche-titre">${esc(r.nom)}</h2></div>
+  $("#fiche-corps").innerHTML = `<div class="fenetre-tete"><div class="fiche-titre">${numero != null && numero !== "" ? pastille(numero, "grande") : ""}<h2 id="fiche-titre">${esc(r.nom)}</h2></div>
       <button type="button" class="fermer" data-action="fermer" aria-label="Fermer la recette">${icone("fermer")}</button></div>
     <div class="fiche-barre">
       ${"wakeLock" in navigator ? `<button type="button" class="bouton secondaire eveil" data-action="eveil" aria-pressed="${!!verrouEcran}">Garder l'écran allumé</button>` : ""}

@@ -175,7 +175,7 @@ components:
 
 **Creative North Star: "Le tableau des départs"**
 
-Chaque repas est un départ affiché : moment, numéro, plat, qui, où. L'interface se lit comme le panneau d'une gare ou d'un aéroport, à un mètre, d'un coup d'œil, mains prises. Un panneau bleu nuit porte le prochain repas en très grand ; le reste de la période défile dessous comme la suite des départs, en lignes séparées par des filets. Le jaune signal ne désigne qu'une chose à la fois : ce qui arrive maintenant.
+Chaque repas est un départ affiché : moment, numéro, plat, qui, où. L'interface se lit comme le panneau d'une gare ou d'un aéroport, à un mètre, d'un coup d'œil, mains prises. Un panneau bleu nuit porte le prochain repas en très grand ; le reste de la période défile dessous comme la suite des départs, en lignes séparées par des filets. Le jaune signal désigne ce qui arrive maintenant ; les plats ont leurs propres couleurs vives (voir « Pastilles de plat »).
 
 La densité est celle d'un horaire, pas d'un tableau de bord : pas de cartes, pas de barre latérale, pas de jauges permanentes. Les macros et les stocks restent accessibles mais au second plan, dans une ligne des repères qu'on touche pour l'ouvrir. Les repas passés sont « poinçonnés » : atténués, en graisse normale, avec la mention « passé ». Le monde est engagé et monochrome bleu : tous les neutres sont teintés de bleu nuit, aucun gris d'appoint.
 
@@ -183,7 +183,7 @@ Le geste signature est le panneau du prochain repas, dont les lignes basculent c
 
 **Key Characteristics:**
 - Un seul panneau bleu nuit plein, celui du prochain repas ; tout le reste est fond bleu très pâle et filets.
-- Jaune signal réservé au prochain repas et au jour en cours.
+- Jaune signal réservé au prochain repas et au jour en cours (pastille, bandeau, fond pâle `chaud` de la ligne). Les pastilles de plat {N} ont leur palette propre.
 - Une seule famille, Atkinson Hyperlegible Next, chiffres tabulaires partout, 800 pour l'affichage.
 - Plats numérotés en pastilles `{N}` rondes et cerclées, comme sur les fiches imprimées.
 - Cibles tactiles de 44 px minimum, 48–56 px pour les actions principales.
@@ -327,3 +327,11 @@ Fenêtre modale 820 px (plein écran sous 640 px), en-tête collant bleu nuit av
 - **Don't** introduire un gris neutre ou une couleur décorative hors de la palette bleu nuit.
 - **Don't** ajouter d'ombre à un élément posé dans la page.
 - **Don't** employer une autre famille que Atkinson Hyperlegible Next ni une graisse hors 400 / 600 / 800.
+
+
+## Addendum du 2026-10-14 : couleur et repérage des jours
+
+- **Pastilles de plat {N}** : 26 teintes vives (angle d'or, saturation 96 %) via `--c`, chiffre bleu nuit `sur-vif` (#0A1F44, contraste ≥ 5,5:1). Un anneau à motif par numéro (plein, double, points, tirets) double la couleur pour ne pas dépendre d'elle seule. Passé = désaturé. Cette palette diffère de celle des fiches imprimées (sobre, chiffre blanc).
+- **Type de plat** : badge plein sous chaque départ, Viande orange `#FF8A3D`, Poisson cyan `#35D0F5`, Végétarien vert `#8CE04A`, texte bleu nuit. Affiché seulement si la recette renseigne le type.
+- **Bandeaux de jour** (Semaine et À choisir) : fond `quai`, texte blanc, 52 px minimum, coins 10 px ; jour en cours en jaune signal avec « aujourd'hui » en pastille bleu nuit ; pastilles des plats du jour à droite (sous le titre sur téléphone). Espace de 48 px entre jours.
+- **Prochain repas** : fond jaune pâle `chaud` sur sa ligne.

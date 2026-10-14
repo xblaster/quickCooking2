@@ -27,6 +27,8 @@
   --viande: #8E4A1F;
   --poisson: #11657C;
   --vege: #3D6B1E;
+  --viande-fond: #FF8A3D; --poisson-fond: #35D0F5; --vege-fond: #8CE04A; --sur-vif: #0A1F44;
+  --chaud: #FFEC9E;         /* teinte du jour en cours et du prochain départ (jaune très pâle) */
   --rayon: 12px;
   --police: "Atkinson Hyperlegible Next", "Atkinson Hyperlegible", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --ease: cubic-bezier(.16, 1, .3, 1);
@@ -55,7 +57,7 @@
     --interdit-fond: #45181A;
     --info: #9DC0FF;
     --info-fond: #142B55;
-    --viande: #E0A57A;
+    --viande-fond: #FF8A3D; --poisson-fond: #35D0F5; --vege-fond: #8CE04A; --sur-vif: #0A1F44; --chaud: #3D3310; --viande: #E0A57A;
     --poisson: #74CBE2;
     --vege: #A8D57E;
     color-scheme: dark;
@@ -67,7 +69,7 @@
   --filet: #22396A; --filet-fort: #A9B8D6; --lien: #9DC0FF;
   --ok: #7FD8A4; --ok-fond: #12341F; --attention: #F2C35B; --attention-fond: #3A2C0B;
   --interdit: #FF9B91; --interdit-fond: #45181A; --info: #9DC0FF; --info-fond: #142B55;
-  --viande: #E0A57A; --poisson: #74CBE2; --vege: #A8D57E;
+  --viande-fond: #FF8A3D; --poisson-fond: #35D0F5; --vege-fond: #8CE04A; --sur-vif: #0A1F44; --chaud: #3D3310; --viande: #E0A57A; --poisson: #74CBE2; --vege: #A8D57E;
   color-scheme: dark;
 }
 
@@ -105,7 +107,7 @@ main:focus, main:focus-visible { outline: none; box-shadow: none; }
   max-width: 1440px; margin: 0 auto; padding: 8px 16px; padding-top: max(8px, env(safe-area-inset-top));
   display: flex; align-items: center; gap: 16px; min-height: 56px;
 }
-.marque { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.1rem; color: inherit; text-decoration: none; flex: none; }
+.marque { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.1rem; color: inherit; text-decoration: none; flex: none; min-height: 44px; }
 .marque-logo {
   display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%;
   background: var(--quai-texte); color: var(--quai); font-size: .8rem; font-weight: 800; letter-spacing: .02em;
@@ -202,7 +204,7 @@ body.avec-dock main { padding-bottom: calc(var(--dock-h, 52px) + 96px + env(safe
 }
 .depart-quand { font-weight: 800; font-size: 1.05rem; line-height: 1.2; padding-top: 8px; }
 .depart-quand small { display: block; font-weight: 600; font-size: .85rem; color: var(--discret); }
-.depart .pastille { margin-top: 2px; }
+.depart .pastille { margin: 7px 0 0 5px; }
 .depart-plat { min-width: 0; }
 .depart-plat .plat-nom { font-size: 1.15rem; font-weight: 600; line-height: 1.3; margin: 0; padding-top: 6px; }
 .depart-qui { display: flex; flex-wrap: wrap; gap: 2px 14px; margin: 4px 0 0; color: var(--discret); font-size: .95rem; }
@@ -210,8 +212,9 @@ body.avec-dock main { padding-bottom: calc(var(--dock-h, 52px) + 96px + env(safe
 .depart .plat-meta { margin-top: 6px; }
 .depart.passe { color: var(--discret); }
 .depart.passe .plat-nom { font-weight: 400; }
-.depart.passe .pastille { border-color: var(--filet); color: var(--discret); }
-.depart.prochain .pastille { background: var(--signal); border-color: var(--signal); color: var(--signal-texte); }
+.depart.passe .pastille { filter: saturate(.3); }
+.depart.prochain .pastille { outline: 4px solid var(--signal); outline-offset: 3px; }
+.depart.prochain { background: var(--chaud); margin-inline: -10px; padding-inline: 10px; border-radius: 8px; align-self: start; }
 .depart .poincon { font-size: .8rem; font-weight: 600; color: var(--discret); }
 
 .section-tete { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 0 0 10px; }
@@ -231,21 +234,45 @@ body.avec-dock main { padding-bottom: calc(var(--dock-h, 52px) + 96px + env(safe
 .pied { margin-top: 32px; }
 
 /* ---------- Pastilles {N} ---------- */
+/* Même couleur par numéro que les fiches imprimées (--c, posée par app.js), chiffre blanc.
+   L'anneau extérieur change de motif d'un numéro au suivant : plein, double, points, tirets.
+   Le chiffre reste l'identité ; couleur et motif aident à retrouver le plat d'un coup d'œil. */
 .pastille {
+  --c: var(--texte); --anneau: color-mix(in srgb, var(--c) 40%, var(--sur-vif));
   flex: none; display: inline-grid; place-items: center; min-width: 40px; height: 40px; padding: 0 8px;
-  border-radius: 999px; border: 2.5px solid var(--texte); font-weight: 800; font-size: 1.05rem; line-height: 1;
+  border-radius: 999px; background: var(--c); color: var(--sur-vif); font-weight: 800; font-size: 1.05rem; line-height: 1;
+  outline: 3px solid var(--anneau); outline-offset: 2px; margin: 5px;
 }
-.pastille.signal { min-width: 56px; height: 56px; font-size: 1.6rem; background: var(--signal); border-color: var(--signal); color: var(--signal-texte); }
-.pastille.petite { min-width: 30px; height: 30px; font-size: .85rem; border-width: 2px; margin: 2px 2px 2px 0; vertical-align: middle; }
+.pastille[data-motif="double"] { outline-style: double; outline-width: 5px; outline-offset: 1px; }
+.pastille[data-motif="points"] { outline-style: dotted; }
+.pastille[data-motif="tirets"] { outline-style: dashed; }
+.pastille.signal, .pastille.grande { min-width: 56px; height: 56px; font-size: 1.6rem; --anneau: var(--quai-texte); }
+.pastille { box-shadow: inset 0 0 0 2px rgba(10, 31, 68, .18); }
+.pastille.signal { outline: 4px solid var(--signal); outline-offset: 3px; }
+.pastille.petite { min-width: 30px; height: 30px; font-size: .85rem; outline-width: 2px; outline-offset: 2px; margin: 4px 6px 4px 3px; vertical-align: middle; }
+.pastille.petite[data-motif="double"] { outline-width: 4px; outline-offset: 1px; }
+/* En sombre, l'anneau s'éclaircit pour se détacher du fond bleu nuit. */
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .pastille:not(.signal) { --anneau: color-mix(in srgb, var(--c) 50%, #FFFFFF); } }
+:root[data-theme="dark"] .pastille:not(.signal) { --anneau: color-mix(in srgb, var(--c) 50%, #FFFFFF); }
 
 /* ---------- Semaine ---------- */
 .tete-page { margin-bottom: 20px; }
 .tete-page h1 { margin-bottom: .25rem; }
 .reperes { display: flex; flex-wrap: wrap; gap: 4px 16px; color: var(--discret); font-weight: 600; }
-.jours { display: grid; gap: 32px; }
+.jours { display: grid; gap: 48px; }
 .jour { scroll-margin-top: calc(var(--entete-h, 60px) + 16px); }
-.jour-tete { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
-.jour-tete h2 { margin: 0; font-size: 1.4rem; }
+.jour-tete {
+  display: flex; align-items: center; gap: 6px 12px; flex-wrap: wrap; margin-bottom: 12px; padding: 8px 14px; min-height: 52px;
+  background: var(--quai); color: var(--quai-texte); border-radius: 10px;
+}
+.jour-tete h2 { margin: 0; font-size: 1.4rem; color: inherit; }
+.jour-plats { margin-left: auto; display: inline-flex; flex-wrap: wrap; align-items: center; }
+.jour-tete .pastille { --anneau: var(--quai-texte); }
+.jour-tete.aujourdhui { background: var(--signal); color: var(--signal-texte); }
+.jour-tete.aujourdhui .pastille { --anneau: var(--signal-texte); }
+.jour-tete.aujourdhui .marque-jour { background: var(--quai); color: var(--signal); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .jour-tete:not(.aujourdhui) { background: var(--quai-2); } }
+:root[data-theme="dark"] .jour-tete:not(.aujourdhui) { background: var(--quai-2); }
 .marque-jour { display: inline-block; font-size: .9rem; font-weight: 800; padding: .15rem .6rem; border-radius: 999px; background: var(--signal); color: var(--signal-texte); }
 .agenda { list-style: none; padding: 0; margin: 0 0 10px; display: flex; flex-wrap: wrap; gap: 6px; }
 .agenda li { font-size: .95rem; color: var(--discret); }
@@ -268,9 +295,11 @@ body.avec-dock main { padding-bottom: calc(var(--dock-h, 52px) + 96px + env(safe
   font-size: .8rem; font-weight: 600; line-height: 1.5; border-radius: 999px; padding: 0 .55rem;
   border: 1px solid var(--filet); color: var(--discret); white-space: nowrap; background: var(--surface);
 }
-.badge.type-viande { color: var(--viande); border-color: currentColor; }
-.badge.type-poisson { color: var(--poisson); border-color: currentColor; }
-.badge.type-vege { color: var(--vege); border-color: currentColor; }
+.badge.type-viande { color: var(--sur-vif); background: var(--viande-fond); border-color: transparent; font-weight: 800; }
+.badge.type-poisson { color: var(--sur-vif); background: var(--poisson-fond); border-color: transparent; font-weight: 800; }
+.badge.type-vege { color: var(--sur-vif); background: var(--vege-fond); border-color: transparent; font-weight: 800; }
+.depart .badge.type-viande, .depart .badge.type-poisson, .depart .badge.type-vege { margin-top: 6px; }
+.tableau .badge { margin-top: 10px; }
 .badge.coeur { color: var(--interdit); border-color: currentColor; }
 .badge.banni { background: var(--interdit-fond); color: var(--interdit); border-color: transparent; }
 .badge.nouveau { background: var(--info-fond); color: var(--info); border-color: transparent; }
@@ -315,9 +344,9 @@ body.avec-dock main { padding-bottom: calc(var(--dock-h, 52px) + 96px + env(safe
 .bouton.signal { background: var(--signal); border-color: var(--signal); color: var(--signal-texte); font-size: 1.1rem; min-height: 56px; padding: .7rem 1.4rem; }
 .bouton.sur-quai { background: transparent; color: var(--quai-texte); border-color: var(--quai-discret); }
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .bouton:not(.signal):not(.secondaire):not(.sur-quai) { background: var(--quai-texte); color: #0A1F44; border-color: var(--quai-texte); }
+  :root:not([data-theme="light"]) .bouton:not(.signal):not(.secondaire):not(.sur-quai) { background: var(--quai-texte); color: var(--sur-vif); border-color: var(--quai-texte); }
 }
-:root[data-theme="dark"] .bouton:not(.signal):not(.secondaire):not(.sur-quai) { background: var(--quai-texte); color: #0A1F44; border-color: var(--quai-texte); }
+:root[data-theme="dark"] .bouton:not(.signal):not(.secondaire):not(.sur-quai) { background: var(--quai-texte); color: var(--sur-vif); border-color: var(--quai-texte); }
 .lien {
   background: none; border: 0; padding: 0 2px; color: var(--lien); text-decoration: underline; cursor: pointer;
   font-size: .95rem; font-weight: 600; min-height: 44px; display: inline-flex; align-items: center;
