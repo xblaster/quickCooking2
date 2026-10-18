@@ -556,7 +556,7 @@ function carteChoixRepas(p, r, evalu, ouvert) {
     : `<li class="option option-reste indisponible">Reste du dîner de ${esc(veilleCourt)} : ${esc(rv.raison)}</li>`;
 
   // Trois propositions visibles ; les autres à un toucher (toujours visibles si l'une d'elles est choisie).
-  const VISIBLES = 3;
+  const VISIBLES = 5;
   const valides = (r.options || []).filter((o) => etat.index.has(o.ref));
   const rangChoisi = valides.findIndex((o) => o.ref === c.ref && !estReste);
   const montrerTout = rangChoisi >= VISIBLES;
