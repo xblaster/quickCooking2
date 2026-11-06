@@ -416,9 +416,13 @@ body.avec-dock main { padding-bottom: calc(var(--dock-h, 52px) + 96px + env(safe
 }
 
 /* ---------- Courses ---------- */
+.courses-actions { margin-top: 14px; }
+.courses-actions .bouton { max-width: 100%; white-space: normal; }
 .courses-bloc { margin-bottom: 32px; }
 .courses-bloc > h2 { border-bottom: 2px solid var(--filet-fort); padding-bottom: 8px; margin-bottom: 0; }
 .courses-bloc h3 { font-size: 1.05rem; margin: 20px 0 2px; }
+.courses-cochees { margin-top: 28px; }
+.courses-cochees > h2 { color: var(--discret); border-bottom-color: var(--filet); }
 .liste-cases { list-style: none; padding: 0; margin: 0; }
 .liste-cases li { border-bottom: 1px solid var(--filet); }
 .case { display: flex; gap: 14px; align-items: flex-start; padding: 12px 0; cursor: pointer; min-height: 52px; }

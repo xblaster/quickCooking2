@@ -4,7 +4,7 @@ import { test } from "node:test";
 import { rendreMarkdown } from "../public/js/markdown.js";
 import { chercher } from "../public/js/recherche.js";
 import { alertesRecette, evaluerPeriode, indexRecettes, resteVeille } from "../public/js/regles.js";
-import { normaliser } from "../public/js/outils.js";
+import { normaliser, repartirCourses } from "../public/js/outils.js";
 
 const exemple = JSON.parse(readFileSync(new URL("../exemple/export.json", import.meta.url), "utf8"));
 
@@ -190,4 +190,64 @@ test("reste de la veille : midi de semaine seulement, recette compatible et qui 
   assert.equal(resteVeille(midi("mar-mbf"), ctx("chaud")).possible, false, "boîte froide : plat froid exigé");
   assert.equal(resteVeille(midi("sam-m"), ctx("chaud")), null, "week-end");
   assert.equal(resteVeille({ ...midi("mar-m"), reste_veille: false }, ctx("chaud")), null, "interdit par l'export");
+});
+
+
+test("repartirCourses : rien de rangé, partiel, décoché, coché après appui, vidage et ordre", () => {
+  const coursesTest = {
+    a_verifier: [
+      { id: "v1", libelle: "Farine" },
+      { id: "v2", libelle: "Sucre" },
+    ],
+    passages: [
+      {
+        id: "p1",
+        libelle: "Marché",
+        sections: [
+          { titre: "Frais", articles: [{ id: "a1", libelle: "Lait" }, { id: "a2", libelle: "Oeufs" }] },
+          { titre: "Fruits", articles: [{ id: "a3", libelle: "Pommes" }] },
+        ],
+      },
+      {
+        id: "p2",
+        libelle: "Boulangerie",
+        sections: [
+          { titre: "Pains", articles: [{ id: "a4", libelle: "Baguette" }] },
+        ],
+      },
+    ],
+  };
+
+  // 1. Rien de rangé (même si des cases sont cochées)
+  const r1 = repartirCourses(coursesTest, [], ["v1", "a1"]);
+  assert.equal(r1.deja_cochees.length, 0);
+  assert.equal(r1.a_verifier.length, 2);
+  assert.equal(r1.passages.length, 2);
+
+  // 2. Liste partiellement rangée
+  const r2 = repartirCourses(coursesTest, ["v1", "a1"], ["v1", "a1"]);
+  assert.deepEqual(r2.deja_cochees.map((x) => x.id), ["v1", "a1"]);
+  assert.deepEqual(r2.a_verifier.map((x) => x.id), ["v2"]);
+  assert.deepEqual(r2.passages[0].sections[0].articles.map((x) => x.id), ["a2"]);
+
+  // 3. Ligne rangée puis décochée (retourne à sa place)
+  const r3 = repartirCourses(coursesTest, ["v1", "a1"], ["a1"]);
+  assert.deepEqual(r3.deja_cochees.map((x) => x.id), ["a1"]);
+  assert.deepEqual(r3.a_verifier.map((x) => x.id), ["v1", "v2"]);
+
+  // 4. Ligne cochée après l'appui restée en place
+  const r4 = repartirCourses(coursesTest, ["a1"], ["a1", "a2"]);
+  assert.deepEqual(r4.deja_cochees.map((x) => x.id), ["a1"]);
+  assert.deepEqual(r4.passages[0].sections[0].articles.map((x) => x.id), ["a2"]);
+
+  // 5. Rayon, passage et bloc à vérifier vidés
+  const r5 = repartirCourses(coursesTest, ["v1", "v2", "a3", "a4"], ["v1", "v2", "a3", "a4"]);
+  assert.equal(r5.a_verifier.length, 0);
+  assert.equal(r5.passages.length, 1);
+  assert.equal(r5.passages[0].sections.length, 1);
+  assert.equal(r5.passages[0].sections[0].titre, "Frais");
+
+  // 6. Ordre d'origine conservé
+  const r6 = repartirCourses(coursesTest, ["v2", "a1", "a4"], ["v2", "a1", "a4"]);
+  assert.deepEqual(r6.deja_cochees.map((x) => x.id), ["v2", "a1", "a4"]);
 });

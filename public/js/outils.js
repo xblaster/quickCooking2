@@ -37,3 +37,45 @@ export const couleurPastille = (n) => PALETTE_PASTILLES[(((Number(n) - 1) % 26) 
 // Second canal, pour ne pas reposer sur la couleur seule : l'anneau change de motif d'un numéro au suivant.
 export const MOTIFS_PASTILLES = ["plein", "double", "points", "tirets"];
 export const motifPastille = (n) => MOTIFS_PASTILLES[(((Number(n) - 1) % 4) + 4) % 4];
+
+/**
+ * Répartit les lignes de courses : retire de la liste principale les lignes rangées
+ * qui sont encore cochées, élague les rayons et passages devenus vides, et produit
+ * la liste plate des lignes rangées dans leur ordre d'origine.
+ */
+export function repartirCourses(courses, rangees = [], cochees = []) {
+  if (!courses) return { a_verifier: [], passages: [], deja_cochees: [], rangees: [] };
+  const setRangees = rangees instanceof Set ? rangees : new Set(Array.isArray(rangees) ? rangees : Object.keys(rangees || {}));
+  const setCochees = cochees instanceof Set ? cochees : new Set(Array.isArray(cochees) ? cochees : Object.keys(cochees || {}));
+
+  const estDeplacee = (id) => setRangees.has(id) && setCochees.has(id);
+
+  const deja_cochees = [];
+  const a_verifier = [];
+
+  for (const art of courses.a_verifier || []) {
+    if (estDeplacee(art.id)) deja_cochees.push(art);
+    else a_verifier.push(art);
+  }
+
+  const passages = [];
+  for (const pass of courses.passages || []) {
+    const sections = [];
+    for (const sec of pass.sections || []) {
+      const articles = [];
+      for (const art of sec.articles || []) {
+        if (estDeplacee(art.id)) deja_cochees.push(art);
+        else articles.push(art);
+      }
+      if (articles.length > 0) sections.push({ ...sec, articles });
+    }
+    if (sections.length > 0) passages.push({ ...pass, sections });
+  }
+
+  return {
+    a_verifier,
+    passages,
+    deja_cochees,
+    rangees: deja_cochees,
+  };
+}

@@ -2,7 +2,7 @@
 import { rendreMarkdown } from "./markdown.js";
 import { appareilsConnus, chercher, CRITERES_VIDES } from "./recherche.js";
 import { alertesRecette, articlesAConsommer, evaluerPeriode, indexRecettes, macrosParJour, pire, repasAvantEcheance, resteVeille, usageStocks } from "./regles.js";
-import { arrondi, couleurPastille, dateLocale, esc, isoDuJour, LIBELLE_MOMENT, LIBELLE_TYPE, motifPastille, normaliser } from "./outils.js";
+import { arrondi, couleurPastille, dateLocale, esc, isoDuJour, LIBELLE_MOMENT, LIBELLE_TYPE, motifPastille, normaliser, repartirCourses } from "./outils.js";
 
 const $ = (sel, racine = document) => racine.querySelector(sel);
 const vue = $("#vue");
@@ -19,6 +19,8 @@ const etat = {
   coteOuvert: false, // panneau déplié (téléphone)
   lieuStock: lireLocal("qc-lieu-stock", "frigo"),
   courses: null, // cases cochées (partagées, sur le serveur)
+  coursesRangees: new Set(), // ids des lignes rangées dans « Déjà cochées » (propre à l'appareil)
+  coursesRangeesPeriode: null,
   appareil: null, // { id, nom, statut, mode, autorise }
 };
 
@@ -425,20 +427,70 @@ const agenda = (j) => (j.agenda?.length ? `<ul class="agenda">${j.agenda.map((a)
 // Cases partagées : enregistrées sur le serveur, visibles par toute la famille.
 const cochees = () => new Set(Object.keys(etat.courses?.coches || {}));
 
+function chargerCoursesRangees(periodeId) {
+  etat.coursesRangeesPeriode = periodeId || null;
+  const lues = periodeId ? lireLocal(`courses_rangees_${periodeId}`, []) : [];
+  etat.coursesRangees = new Set(Array.isArray(lues) ? lues : []);
+}
+
+function enregistrerCoursesRangees(rangees) {
+  const p = periodeCourante();
+  etat.coursesRangees = rangees instanceof Set ? rangees : new Set(rangees || []);
+  if (p?.id) {
+    etat.coursesRangeesPeriode = p.id;
+    ecrireLocal(`courses_rangees_${p.id}`, [...etat.coursesRangees]);
+  }
+}
+
 async function chargerCourses() {
   const p = periodeCourante();
   etat.courses = p?.courses ? await api(`/api/courses/${encodeURIComponent(p.id)}`) : null;
+  chargerCoursesRangees(p?.id);
+}
+
+function majBoutonRanger() {
+  const conteneur = $(".courses-actions");
+  if (!conteneur) return;
+  const faits = cochees();
+  const aRanger = [...faits].some((id) => !etat.coursesRangees.has(id));
+  conteneur.innerHTML = aRanger ? `<button type="button" class="bouton secondaire" data-action="ranger-cochees">Mettre les cochées en bas</button>` : "";
+  const resume = $(".tete-page .resume-courses");
+  const p = periodeCourante();
+  if (resume && p) resume.innerHTML = resumeCourses(p, { brut: true });
 }
 
 async function cocher(id, coche) {
   const p = periodeCourante();
   const avant = structuredClone(etat.courses);
-  if (coche) etat.courses.coches[id] = { par: etat.moi, le: new Date().toISOString() };
-  else delete etat.courses.coches[id];
+  const avantRangees = new Set(etat.coursesRangees);
+  const etaitRangee = !coche && etat.coursesRangees.has(id);
+
+  if (!etat.courses.coches) etat.courses.coches = {};
+  if (coche) {
+    etat.courses.coches[id] = { par: etat.moi, le: new Date().toISOString() };
+  } else {
+    delete etat.courses.coches[id];
+    if (etaitRangee) {
+      etat.coursesRangees.delete(id);
+      if (p?.id) ecrireLocal(`courses_rangees_${p.id}`, [...etat.coursesRangees]);
+    }
+  }
+
+  if (etaitRangee) {
+    rafraichir();
+    $(`input[data-action="cocher"][data-id="${id}"]`)?.focus();
+  } else {
+    majBoutonRanger();
+  }
+
   try {
     etat.courses = await api(`/api/courses/${encodeURIComponent(p.id)}/${encodeURIComponent(id)}`, { method: "PUT", body: JSON.stringify({ coche, par: etat.moi }) });
   } catch (e) {
     etat.courses = avant;
+    if (etaitRangee) {
+      etat.coursesRangees = avantRangees;
+      if (p?.id) ecrireLocal(`courses_rangees_${p.id}`, [...etat.coursesRangees]);
+    }
     toast(`Case non enregistrée : ${e.message}`, "interdit");
     rafraichir();
   }
@@ -465,24 +517,32 @@ function nomsPlats(numeros) {
 function vueCourses() {
   const p = periodeCourante();
   if (!p?.courses) return `<p class="vide">Pas de liste de courses pour la période en cours.</p>`;
+  if (etat.coursesRangeesPeriode !== p.id) chargerCoursesRangees(p.id);
+
   const c = p.courses;
   const faits = cochees();
+  const reparti = repartirCourses(c, etat.coursesRangees, faits);
+  const aRanger = [...faits].some((id) => !etat.coursesRangees.has(id));
+
   const qui = (id) => {
-    const c = etat.courses?.coches?.[id];
-    return c?.par ? ` <span class="coche-par" title="Coché par ${esc(nomDe(c.par))}">${esc(c.par)}</span>` : "";
+    const info = etat.courses?.coches?.[id];
+    return info?.par ? ` <span class="coche-par" title="Coché par ${esc(nomDe(info.par))}">${esc(info.par)}</span>` : "";
   };
   const caseA = (id, contenu) => `<label class="case"><input type="checkbox" data-action="cocher" data-id="${esc(id)}" ${faits.has(id) ? "checked" : ""}><span>${contenu}${qui(id)}</span></label>`;
-  return `<header class="tete-page"><h1>Courses</h1><p class="discret">${esc(p.titre)} · ${resumeCourses(p, { brut: true })}</p>${c.note ? `<p class="note">${esc(c.note)}</p>` : ""}
-      <p class="discret">Les cases cochées sont partagées avec toute la famille. Les numéros renvoient aux plats de la semaine.</p></header>
-    ${c.a_verifier?.length ? `<section class="courses-bloc"><h2>À vérifier à la maison</h2><ul class="liste-cases">${c.a_verifier.map((a) =>
-      `<li>${caseA(a.id, `<b>${esc(a.libelle)}</b>${nomsPlats(a.pour)}${a.sinon ? `<br><span class="discret">Sinon : ${esc(a.sinon)}</span>` : ""}`)}</li>`).join("")}</ul></section>` : ""}
-    ${(c.passages || []).map((x) => `<section class="courses-bloc"><h2>${esc(x.libelle)}</h2>${x.sections.map((s) => `<h3>${esc(s.titre)}</h3>
-      <ul class="liste-cases">${s.articles.map((a) => `<li>${caseA(a.id, `${a.quantite ? `<span class="qte">${esc(a.quantite)}</span> ` : ""}<b>${esc(a.libelle)}</b>${nomsPlats(a.pour)}${
-        a.note ? `<br><span class="discret">${esc(a.note)}</span>` : ""}`)}</li>`).join("")}</ul>`).join("")}</section>`).join("")}
+  const ligneCourse = (a) => `${a.quantite ? `<span class="qte">${esc(a.quantite)}</span> ` : ""}<b>${esc(a.libelle)}</b>${nomsPlats(a.pour)}${a.sinon ? `<br><span class="discret">Sinon : ${esc(a.sinon)}</span>` : ""}${a.note ? `<br><span class="discret">${esc(a.note)}</span>` : ""}`;
+
+  return `<header class="tete-page"><h1 tabindex="-1">Courses</h1><p class="discret">${esc(p.titre)} · <span class="resume-courses">${resumeCourses(p, { brut: true })}</span></p>${c.note ? `<p class="note">${esc(c.note)}</p>` : ""}
+      <p class="discret">Les cases cochées sont partagées avec toute la famille. Les numéros renvoient aux plats de la semaine.</p>
+      <div class="courses-actions">${aRanger ? `<button type="button" class="bouton secondaire" data-action="ranger-cochees">Mettre les cochées en bas</button>` : ""}</div></header>
+    ${reparti.a_verifier?.length ? `<section class="courses-bloc"><h2>À vérifier à la maison</h2><ul class="liste-cases">${reparti.a_verifier.map((a) =>
+      `<li>${caseA(a.id, ligneCourse(a))}</li>`).join("")}</ul></section>` : ""}
+    ${(reparti.passages || []).map((x) => `<section class="courses-bloc"><h2>${esc(x.libelle)}</h2>${x.sections.map((s) => `<h3>${esc(s.titre)}</h3>
+      <ul class="liste-cases">${s.articles.map((a) => `<li>${caseA(a.id, ligneCourse(a))}</li>`).join("")}</ul>`).join("")}</section>`).join("")}
     ${c.deja_maison?.length ? `<section class="courses-bloc"><h2>Déjà à la maison : ne pas racheter</h2><div class="table-defile"><table>
       <thead><tr><th>Produit</th><th>Où</th><th>Pour</th></tr></thead><tbody>${c.deja_maison.map((d) =>
         `<tr><td>${esc(d.produit)}</td><td>${esc(d.ou)}</td><td>${nomsPlats(d.pour)}</td></tr>`).join("")}</tbody></table></div></section>` : ""}
-    ${faits.size ? `<p><button type="button" class="bouton secondaire" data-action="decocher-tout">Tout décocher</button></p>` : ""}`;
+    ${reparti.deja_cochees?.length ? `<section class="courses-bloc courses-cochees"><h2>Déjà cochées (${reparti.deja_cochees.length})</h2><ul class="liste-cases">${reparti.deja_cochees.map((a) =>
+      `<li>${caseA(a.id, ligneCourse(a))}</li>`).join("")}</ul></section>` : ""}`;
 }
 
 // ---------- Vue : choisir la période à venir ----------
@@ -1121,11 +1181,10 @@ document.addEventListener("click", (ev) => {
   else if (action === "portion") enregistrerRepas(repas, { portion: Number(el.dataset.portion) });
   else if (action === "remplacer") ouvrirTiroir(repas);
   else if (action === "statut") enregistrerPeriode({ statut: el.dataset.statut });
-  else if (action === "decocher-tout") {
-    if (!confirm("Décocher toute la liste, pour toute la famille ?")) return;
-    api(`/api/courses/${encodeURIComponent(periodeCourante().id)}`, { method: "DELETE" })
-      .then((c) => { etat.courses = c; rafraichir(); })
-      .catch((e) => toast(`Non enregistré : ${e.message}`, "interdit"));
+  else if (action === "ranger-cochees") {
+    enregistrerCoursesRangees(cochees());
+    rafraichir();
+    $(".tete-page h1")?.focus();
   }
 });
 
