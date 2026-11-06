@@ -16,7 +16,7 @@
 ## 3. Livraison
 
 - [x] 3.1 Lancer `npm test` et vérifier que toute la suite passe.
-- [ ] 3.2 Construire l'image `xblaster/quick-cooking:<AAAAMMJJ-sha7>` et mettre à jour son tag dans `deploy/k8s/` selon `docs/deploiement.md`, puis vérifier que l'image répond 200 sur `GET /` en local.
+- [x] 3.2 Construire l'image `xblaster/quick-cooking:<AAAAMMJJ-sha7>` et mettre à jour son tag dans `deploy/k8s/` selon `docs/deploiement.md`, puis vérifier que l'image répond 200 sur `GET /` en local.
 - [ ] 3.3 Faire valider par un humain le déploiement réel sur le cluster `catwo`, puis vérifier sur https://quick-cooking.lo2k.net/#/courses que le bouton fonctionne sur téléphone.
 
 ## Workflow follow-up
