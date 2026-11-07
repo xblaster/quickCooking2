@@ -645,3 +645,123 @@ body:not(.avec-dock) .toast { bottom: calc(74px + env(safe-area-inset-bottom)); 
 @media (min-width: 1000px) {
   .cote { left: auto; right: 24px; width: 440px; border: 2px solid var(--filet-fort); border-bottom: 0; border-radius: 12px 12px 0 0; }
 }
+
+/* ---------- Identité : passkey dans l'en-tête ---------- */
+.moi-session, .moi-cle {
+  display: inline-grid; place-items: center; min-width: 44px; height: 44px; padding: 0 .7rem; border-radius: 999px;
+  font-weight: 800; text-decoration: none; border: 1.5px solid var(--quai-2); color: var(--quai-texte);
+}
+.moi-session { background: var(--quai-texte); color: var(--quai); border-color: var(--quai-texte); }
+.moi-session .nom-long { display: none; }
+.moi-cle { padding: 0; margin-left: 2px; }
+.moi-cle svg { width: 20px; height: 20px; }
+.moi-cle[aria-current="page"] { background: var(--quai-2); }
+@media (min-width: 1000px) {
+  .moi-session .nom-court { display: none; }
+  .moi-session .nom-long { display: inline; }
+}
+
+/* ---------- Mon identité ---------- */
+.identite { display: grid; gap: 28px; max-width: 640px; }
+.identite h2 { margin-bottom: 8px; }
+.identite-qui { display: flex; gap: 14px; align-items: center; }
+.identite-qui > span:last-child { display: grid; }
+.identite-qui b { font-size: 1.25rem; font-weight: 800; }
+.initiale {
+  flex: none; display: inline-grid; place-items: center; width: 40px; height: 40px; border-radius: 50%;
+  border: 2px solid var(--filet-fort); font-weight: 800;
+}
+.identite-qui .initiale { width: 52px; height: 52px; font-size: 1.3rem; border-width: 2.5px; }
+.form-passkey { display: grid; gap: 14px; max-width: 440px; }
+.form-passkey .bouton { justify-self: start; }
+.champ select {
+  width: 100%; min-height: 48px; border: 1.5px solid var(--filet); border-radius: 10px; padding: .6rem .75rem; background: var(--surface); color: var(--texte);
+}
+.champ select:focus { border-color: var(--filet-fort); }
+.form-passkey input[name="code"] { font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.form-erreur { margin: 0; border-radius: 8px; padding: .6rem .8rem; font-size: .95rem; }
+.code-invitation {
+  margin: 4px 0; font-size: clamp(2rem, 9vw, 2.8rem); font-weight: 800; letter-spacing: .06em;
+  border-top: 2px solid var(--filet-fort); border-bottom: 1px solid var(--filet); padding: 10px 0; user-select: all;
+}
+.admin h3 { margin: 24px 0 0; font-size: 1.05rem; }
+.liste-passkeys { list-style: none; margin: 8px 0 0; padding: 0; border-top: 2px solid var(--filet-fort); }
+.liste-passkeys li { display: flex; gap: 12px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--filet); }
+.liste-passkeys li > div { flex: 1 1 220px; min-width: 0; }
+.liste-passkeys p { margin: 0; overflow-wrap: anywhere; }
+.liste-passkeys li.revoquee { color: var(--discret); }
+.liste-passkeys li.revoquee .initiale { border-color: var(--filet); }
+.liste-passkeys .bouton { flex: none; }
+@media (max-width: 560px) {
+  .liste-passkeys li { flex-wrap: wrap; align-items: flex-start; }
+  .liste-passkeys li > div { flex-basis: calc(100% - 52px); }
+  .liste-passkeys .bouton { margin-left: 52px; }
+}
+
+/* ---------- Avis : ligne compacte sous le départ ---------- */
+.avis-bloc { display: flex; flex-wrap: wrap; align-items: center; gap: 0 14px; margin-top: 2px; }
+.avis-bloc .lien { text-align: left; }
+.avis-ligne { margin: 0; display: flex; flex-wrap: wrap; gap: 2px 12px; font-size: .92rem; }
+.avis-court { display: inline-flex; align-items: center; gap: 5px; }
+.avis-court b { font-weight: 800; }
+.verdict { display: inline-block; font-size: .82rem; font-weight: 800; line-height: 1.5; border-radius: 4px; padding: 0 6px; }
+.verdict.v-coup_de_coeur { color: var(--ok); background: var(--ok-fond); }
+.verdict.v-bien { color: var(--texte); background: var(--surface-2); }
+.verdict.v-bof { color: var(--attention); background: var(--attention-fond); }
+.verdict.v-plus_jamais { color: var(--interdit); background: var(--interdit-fond); }
+
+/* ---------- Avis : tiroir de saisie ---------- */
+@media (min-width: 641px) { .avis { width: min(640px, calc(100vw - 24px)); } }
+.avis .fiche-titre h2 { font-size: clamp(1.25rem, 4vw, 1.6rem); text-wrap: balance; }
+.avis-quand { margin: 2px 0 0; color: var(--quai-discret); font-weight: 600; font-size: .95rem; }
+.form-avis { display: grid; gap: 4px; }
+.form-avis .form-erreur { margin-top: 16px; }
+.verdicts, .etiquettes { border: 0; padding: 0; margin: 20px 0 0; min-width: 0; }
+.verdicts legend, .etiquettes legend { padding: 0; margin-bottom: 10px; font-weight: 800; font-size: 1.1rem; }
+.etiquettes legend .discret { font-weight: 400; font-size: .95rem; }
+.verdicts-grille { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+@media (min-width: 561px) { .verdicts-grille { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.verdict-choix {
+  position: relative; display: grid; place-items: center; min-height: 56px; padding: 6px 12px; text-align: center; cursor: pointer;
+  border: 1.5px solid var(--filet); border-radius: 999px; background: var(--surface); font-weight: 800; font-size: 1.05rem; line-height: 1.2;
+  transition: background-color .2s var(--ease), border-color .2s var(--ease), color .2s var(--ease);
+}
+.verdict-choix:hover { border-color: var(--filet-fort); }
+.verdict-choix input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
+.verdict-choix:has(input:focus-visible) { outline: 3px solid var(--texte); outline-offset: 2px; box-shadow: 0 0 0 6px var(--surface); }
+.verdict-choix:has(input:checked) { background: var(--quai); color: var(--quai-texte); border: 2.5px solid var(--quai); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .verdict-choix:has(input:checked) { background: var(--quai-texte); color: var(--sur-vif); border-color: var(--quai-texte); }
+}
+:root[data-theme="dark"] .verdict-choix:has(input:checked) { background: var(--quai-texte); color: var(--sur-vif); border-color: var(--quai-texte); }
+.etiquettes .filtre:has(input:checked) { border-color: var(--filet-fort); background: var(--surface-2); font-weight: 600; }
+.etiquettes .filtre:has(input:focus-visible) { outline: 3px solid var(--texte); outline-offset: 2px; }
+.etiquettes .filtre input:focus-visible { outline: none; box-shadow: none; }
+.avis-commentaire { margin-top: 20px; }
+.avis-commentaire span { font-weight: 800; font-size: 1.1rem; color: var(--texte); }
+.avis-commentaire textarea { resize: vertical; min-height: 7.5rem; line-height: 1.45; color: var(--texte); }
+.form-avis #avis-aide, .form-avis #avis-compte { margin: 2px 0 0; }
+.avis-pied {
+  position: sticky; bottom: 0; z-index: 1; display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  margin: 16px -20px 0; padding: 12px 20px calc(12px + env(safe-area-inset-bottom)); background: var(--surface); border-top: 1px solid var(--filet);
+}
+.avis-pied .bouton[type="submit"] { flex: 1 1 220px; min-height: 56px; font-size: 1.1rem; }
+.lien.danger { color: var(--interdit); }
+.avis-connexion { margin-top: 18px; border-radius: 10px; padding: 14px 16px; }
+.avis-connexion h3 { margin: 0 0 4px; font-size: 1.1rem; color: inherit; }
+.avis-connexion p { margin: 0; }
+.avis-autres { margin-top: 24px; }
+.avis-autres h3 { margin: 0; padding-bottom: 8px; border-bottom: 2px solid var(--filet-fort); font-size: 1.1rem; }
+.avis-autres ul { list-style: none; margin: 0; padding: 0; }
+.avis-autres li { display: flex; gap: 12px; align-items: flex-start; padding: 12px 0; border-bottom: 1px solid var(--filet); }
+.avis-autres li > div { min-width: 0; }
+.avis-autres p { margin: 0 0 2px; }
+.avis-texte { overflow-wrap: anywhere; white-space: pre-line; }
+.avis-vide { margin-top: 20px; }
+
+/* ---------- Confirmation ---------- */
+.fenetre.confirmer { width: min(460px, calc(100vw - 32px)); height: fit-content; max-height: calc(100dvh - 32px); margin: auto; border-radius: var(--rayon); }
+.confirmer-corps { padding: 20px 20px 18px; }
+.confirmer-corps h2 { margin: 0 0 8px; font-size: 1.3rem; }
+.confirmer-corps p { margin: 0; color: var(--discret); }
+.confirmer-corps .repas-actions { justify-content: flex-end; }

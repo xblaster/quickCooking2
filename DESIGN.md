@@ -310,6 +310,16 @@ Coins francs mais adoucis : 12 px pour le panneau et les fenêtres, 10 px pour l
 ### Fiche recette (mode cuisine)
 Fenêtre modale 820 px (plein écran sous 640 px), en-tête collant bleu nuit avec la pastille et le titre, bouton fermer rond 48 px. Corps en 1.22rem ; étapes numérotées dans des cercles cerclés de 2.2rem, séparées par des filets. Le détail secondaire (infos, macros) est replié sous un filet fort.
 
+### Composant d'avis
+*Dire en dix secondes ce qu'on a pensé d'un plat.* Le verdict est une information, jamais un signal : pas de jaune, pas d'étoiles, pas d'émoji.
+- **Ligne compacte** (sous le départ, Semaine et « Ensuite ») : initiale en 800 + étiquette de verdict (0.82rem 800, coins 4 px, couple texte + fond pâle : `ok` Coup de cœur, `surface-2` Bien, `attention` Bof, `interdit` Plus jamais), « + commentaire » en `discret`, puis le lien d'action « Donner mon avis » ou « Mon avis : … · modifier ». Rien quand aucun avis n'existe, à part le lien.
+- **Tiroir** : fenêtre modale 640 px (plein écran sous 640 px), même en-tête que la fiche (pastille grande + nom du plat + jour et moment en `quai-discret`). « Mon verdict » : quatre pilules radio de 56 px, 2 × 2 sur téléphone, 4 en ligne au-delà, choisie = plein bleu nuit (inversé en sombre). « Ce qui a compté » : chips à cocher du style filtre, cochée = contour `filet-fort` + `surface-2`. Commentaire en champ de 4 lignes, compteur sous 100 caractères restants. Pied collant : « Enregistrer » plein 56 px, « Retirer mon avis » en lien `interdit`. « Les autres » en lignes à filets sous le pied, initiale cerclée.
+- **Sans passkey** : encadré `info` « Pour donner ton avis, connecte ce téléphone » avec « Me connecter » et « Créer une passkey ».
+- **Confirmation** : petite fenêtre centrée 460 px (jamais plein écran), titre-question, « Annuler » secondaire focalisé, action principale à droite.
+
+### Identité (passkeys)
+Page « Mon identité » (`#/moi`) en sections à filet fort. En-tête : connecté, une seule pilule pleine à l'initiale (nom complet sur bureau) qui mène à la page ; sinon les boutons J/P/G et une pilule-icône clé 44 px. Le code d'invitation s'affiche en très grand (800, `clamp(2rem, 9vw, 2.8rem)`), entre filet fort et filet fin. Passkeys en lignes à filets : initiale cerclée, personne et nom d'appareil, dates en `discret` ; révoquée = texte `discret`, sans bouton.
+
 ## Do's and Don'ts
 
 ### Do:

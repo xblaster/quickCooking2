@@ -37,13 +37,21 @@ spec:
           env:
             - name: NODE_ENV
               value: production
-            # Fichiers JSON (export, choix, courses, appareils) sur le volume quick-cooking-data.
+            # Fichiers JSON (export, choix, courses, appareils, passkeys, avis/) sur le volume quick-cooking-data.
             - name: DATA_DIR
               value: /app/data
             # libre : tout appareil peut utiliser le site (il est seulement enregistré).
             # autorises : seuls les appareils autorisés par l'administrateur (voir README.md).
             - name: APPAREILS_MODE
               value: libre
+            # Passkeys : domaine et origine exacts vus par le navigateur (HTTPS via Cloudflare).
+            - name: RP_ID
+              value: quick-cooking.lo2k.net
+            - name: RP_ORIGIN
+              value: https://quick-cooking.lo2k.net
+            # Personnes dont les passkeys administrent (codes d'invitation, révocation).
+            - name: ADMINS
+              value: J
           # Secret (créé à la main, voir docs/deploiement.md §6) :
           #   IMPORT_TOKEN  — jeton d'administration : dépôt de l'export, autorisation des appareils
           envFrom:

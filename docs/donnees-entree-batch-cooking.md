@@ -63,6 +63,9 @@ ne l'écris jamais dans un fichier du dépôt.
 | GET | `/api/export/etat` | — | ce qui est en place : dates, nombre de recettes et d'articles, ids des périodes, avancement des choix, avertissements |
 | GET | `/api/choix` | — | choix de la famille pour la période à venir en place (§5) |
 | GET | `/api/choix/<id période>` | — | idem pour une période donnée |
+| GET | `/api/avis` | — | avis de la famille sur les plats de la période courante (§5 bis) |
+| GET | `/api/avis/<id période>` | — | idem pour une période passée, même sortie de l'export |
+| POST | `/api/invitations` | `{}` | code d'invitation pour créer une passkey (amorçage ; pas ton rôle sauf demande) |
 | GET | `/schema/export-v1.json` | — | schéma JSON (draft 2020-12) de l'export, sans authentification |
 | GET | `/api/appareils` · PUT `/api/appareils/<id>` | `{ "statut": "autorise" }` | administration des appareils de la famille (pas ton rôle sauf demande) |
 
@@ -390,6 +393,47 @@ Envoie **toutes** les fiches de `01_Fiches_Recettes/` (hors `Catalogue`, `Index`
 
 Ensuite : Temps 2 de ton skill (fiche semaine, courses), puis envoi de la nouvelle
 `periode_courante` et passage de l'ancienne `periode_a_venir` en `close` ou à `null`.
+
+---
+
+## 5 bis. Relire les avis de la famille
+
+Pendant la période, Jérôme, Pauline et Grégoire notent les plats de `periode_courante` sur le site
+(connectés par passkey : la personne est certaine). **Avant de raffiner la période suivante**, relis-les :
+`GET /api/avis` (période courante) ou `GET /api/avis/<id période>` (une période passée : ses avis
+restent lisibles quand elle a quitté l'export, mais ne sont plus modifiables).
+
+```json
+{
+  "format": "quick-cooking/avis", "version": 1, "periode": "2026-09-30",
+  "mis_a_jour": "2026-10-01T20:14:03.512Z",
+  "repas": {
+    "mer30-m": {
+      "numero": 31,
+      "plat": { "ref": "10_Cookeo_OnePot/Risotto_Coquillettes_au_Jambon", "nom": "Risotto de coquillettes au jambon" },
+      "avis": {
+        "J": { "verdict": "coup_de_coeur", "etiquettes": ["recette_modifiee"],
+               "commentaire": "St Môret à la place de la crème, parfait.",
+               "cree_le": "2026-09-30T12:41:10.002Z", "mis_a_jour": "2026-09-30T12:44:51.300Z" },
+        "P": { "verdict": "bof", "etiquettes": ["portion_petite"], "commentaire": "",
+               "cree_le": "2026-09-30T13:02:00.118Z", "mis_a_jour": "2026-09-30T13:02:00.118Z" }
+      }
+    }
+  },
+  "verdicts": { "coup_de_coeur": "Coup de cœur", "bien": "Bien", "bof": "Bof", "plus_jamais": "Plus jamais" },
+  "etiquettes": { "portion_petite": "Portion trop petite", "portion_grande": "Portion trop grande",
+    "trop_sale": "Trop salé ou épicé", "fade": "Fade", "texture": "Texture ratée", "rechauffe_mal": "Réchauffe mal",
+    "trop_long": "Trop long à préparer", "recette_modifiee": "Recette modifiée" }
+}
+```
+
+- Seuls les repas notés figurent dans `repas` ; `numero` et `plat` sont ceux du moment de l'avis.
+- Une personne = au plus un avis par repas. `commentaire` : 500 caractères au plus, souvent « ce qu'on a
+  changé ».
+- Correspondance **indicative** avec `Preferences_Famille.md` (c'est toi qui décides, pas le site) :
+  `coup_de_coeur` → ⭐, `plus_jamais` → ❌, `bof` ou toute étiquette → ⚠️ à examiner, `bien` → rien.
+  `recette_modifiee` + commentaire = ajustement à reporter sur la fiche.
+- Un avis isolé n'est pas une règle : signale-le dans ton procès-verbal, ne bannis pas en silence.
 
 ---
 

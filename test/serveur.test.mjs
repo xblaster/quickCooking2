@@ -6,6 +6,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { after, before, test } from "node:test";
 import { fileURLToPath } from "node:url";
+import { fauxAuthentificateur } from "./webauthn-faux.mjs";
 
 const racine = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const dossier = mkdtempSync(path.join(tmpdir(), "qc-"));
@@ -17,7 +18,7 @@ let serveur;
 before(async () => {
   serveur = spawn(process.execPath, ["server.mjs"], {
     cwd: racine,
-    env: { ...process.env, PORT: String(PORT), DATA_DIR: dossier, IMPORT_TOKEN: "jeton-test" },
+    env: { ...process.env, PORT: String(PORT), DATA_DIR: dossier, IMPORT_TOKEN: "jeton-test", RP_ID: "localhost", RP_ORIGIN: "http://localhost:3000" },
     stdio: "pipe",
   });
   for (let i = 0; i < 50; i++) {
@@ -163,6 +164,8 @@ test("mode « autorises » : appareil bloqué jusqu'à autorisation", async () =
     const moi = await (await fetch2("/api/appareil", {}, b2)).json();
     assert.equal(moi.autorise, false);
     assert.equal((await fetch2("/api/donnees", {}, b2)).status, 403);
+    assert.equal((await fetch2("/api/session", {}, b2)).status, 200, "identité accessible avant autorisation");
+    assert.equal((await fetch2("/api/passkeys/connexion/options", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" }, b2)).status, 200);
     const ok = await put(`/api/appareils/${moi.id}`, { statut: "autorise" }, { Authorization: "Bearer jeton-test" }, b2);
     assert.equal(ok.status, 200);
     assert.equal((await fetch2("/api/donnees", {}, b2)).status, 200);
@@ -198,4 +201,126 @@ test("API d'envoi : section seule, vérification à blanc, état, choix sans id"
   // « batch cooking » lit les choix avec son jeton, sans connaître l'id de la période
   const c = await (await fetch(`${base}/api/choix`, { headers: admin })).json();
   assert.equal(c.periode, exemple.periode_a_venir.id);
+});
+
+// ---------- Passkeys, session, avis ----------
+const ADMIN = { Authorization: "Bearer jeton-test" };
+const post = (chemin, corps, entetes = {}) =>
+  fetch2(chemin, { method: "POST", headers: { "Content-Type": "application/json", ...entetes }, body: JSON.stringify(corps ?? {}) });
+const avecCookie = (cookie) => ({ Cookie: cookie });
+const cookieDe = (rep) => rep.headers.get("set-cookie")?.split(";")[0];
+const supprimer = (chemin, cookie) => fetch2(chemin, { method: "DELETE", headers: { "Content-Type": "application/json", ...avecCookie(cookie) } });
+
+async function creerPasskey(personne, droits = ADMIN) {
+  const inv = await post("/api/invitations", {}, droits);
+  assert.equal(inv.status, 200);
+  const { code } = await inv.json();
+  const a = fauxAuthentificateur();
+  const opt = await (await post("/api/passkeys/creation/options", { code, personne, nom: `Téléphone ${personne}` })).json();
+  assert.equal(opt.rp.id, "localhost");
+  assert.equal(opt.authenticatorSelection.userVerification, "required");
+  const rep = await post("/api/passkeys/creation", a.creer(opt.challenge));
+  assert.equal(rep.status, 200, await rep.clone().text());
+  return { a, code, cookie: cookieDe(rep), entete: rep.headers.get("set-cookie"), session: await rep.json() };
+}
+
+test("passkeys : invitation, création, session, droits d'administration", async () => {
+  assert.equal((await post("/api/invitations")).status, 401, "sans droit");
+  assert.deepEqual(await (await fetch2("/api/session")).json(), { personne: null, admin: false });
+
+  const j = await creerPasskey("J");
+  assert.match(j.entete, /HttpOnly/);
+  assert.match(j.entete, /SameSite=Strict/);
+  assert.doesNotMatch(j.entete, /Secure/, "localhost en http");
+  assert.deepEqual([j.session.personne, j.session.admin], ["J", true]);
+  assert.equal((await (await fetch2("/api/session", { headers: avecCookie(j.cookie) })).json()).personne, "J");
+
+  // Code consommé, personne inconnue
+  const deja = await post("/api/passkeys/creation/options", { code: j.code, personne: "P" });
+  assert.equal(deja.status, 400);
+  assert.match((await deja.json()).erreur, /Code d'invitation invalide ou expiré/);
+  const { code } = await (await post("/api/invitations", {}, avecCookie(j.cookie))).json();
+  assert.equal((await post("/api/passkeys/creation/options", { code, personne: "X" })).status, 400);
+
+  // Pauline : pas administratrice
+  const p = await creerPasskey("P", avecCookie(j.cookie));
+  assert.equal(p.session.admin, false);
+  assert.equal((await post("/api/invitations", {}, avecCookie(p.cookie))).status, 403);
+  assert.equal((await fetch2("/api/passkeys", { headers: avecCookie(p.cookie) })).status, 403);
+  const liste = await (await fetch2("/api/passkeys", { headers: avecCookie(j.cookie) })).json();
+  assert.deepEqual(liste.passkeys.map((x) => x.personne), ["J", "P"]);
+  assert.ok(!JSON.stringify(liste).includes(p.cookie.split("=")[1]), "jeton de session jamais exposé");
+
+  // Connexion de Pauline sur un autre onglet
+  const opt = await (await post("/api/passkeys/connexion/options")).json();
+  const cx = await post("/api/passkeys/connexion", p.a.signer(opt.challenge));
+  assert.equal(cx.status, 200);
+  const cookie2 = cookieDe(cx);
+  assert.equal((await cx.json()).personne, "P");
+  assert.equal((await post("/api/passkeys/connexion", p.a.signer(opt.challenge))).status, 400, "défi rejoué");
+  const opt2 = await (await post("/api/passkeys/connexion/options")).json();
+  assert.equal((await post("/api/passkeys/connexion", p.a.signer(opt2.challenge, { origine: "https://pirate.example" }))).status, 400);
+
+  // Révocation par Jérôme : toutes les sessions de la passkey tombent, connexion refusée
+  assert.equal((await supprimer(`/api/passkeys/${p.a.id}`, j.cookie)).status, 200);
+  for (const c of [p.cookie, cookie2]) assert.equal((await (await fetch2("/api/session", { headers: avecCookie(c) })).json()).personne, null);
+  const opt3 = await (await post("/api/passkeys/connexion/options")).json();
+  assert.equal((await post("/api/passkeys/connexion", p.a.signer(opt3.challenge))).status, 401);
+
+  // Déconnexion
+  const out = await supprimer("/api/session", j.cookie);
+  assert.match(out.headers.get("set-cookie"), /Max-Age=0/);
+  assert.equal((await (await fetch2("/api/session", { headers: avecCookie(j.cookie) })).json()).personne, null);
+});
+
+test("avis : session obligatoire, un avis par personne, période figée ensuite", async () => {
+  const p = exemple.periode_courante;
+  const repas = p.repas.find((r) => r.plat?.ref);
+  const url = `/api/avis/${p.id}/${repas.id}`;
+  const putAvis = (corps, cookie) => put(url, corps, cookie ? avecCookie(cookie) : {});
+  const g = await creerPasskey("G");
+  const j = await creerPasskey("J");
+
+  assert.equal((await putAvis({ verdict: "bien" })).status, 401);
+  assert.equal((await putAvis({ verdict: "super" }, g.cookie)).status, 400);
+  assert.equal((await putAvis({ verdict: "bof", commentaire: "x".repeat(501) }, g.cookie)).status, 400);
+  assert.equal((await put(`/api/avis/${p.id}/inconnu`, { verdict: "bof" }, avecCookie(g.cookie))).status, 404);
+  assert.equal((await put(`/api/avis/autre/${repas.id}`, { verdict: "bof" }, avecCookie(g.cookie))).status, 409);
+  const sansJson = await fetch2(url, { method: "PUT", headers: { "Content-Type": "text/plain", ...avecCookie(g.cookie) }, body: "{}" });
+  assert.equal(sansJson.status, 415);
+
+  assert.equal((await putAvis({ verdict: "bof", etiquettes: ["fade"], par: "J" }, g.cookie)).status, 200);
+  const premier = await (await putAvis({ verdict: "coup_de_coeur", commentaire: "Moins de crème", etiquettes: ["recette_modifiee"] }, j.cookie)).json();
+  assert.equal(premier.repas[repas.id].avis.G.verdict, "bof", "la personne vient de la session, pas du corps");
+  const creeLe = premier.repas[repas.id].avis.J.cree_le;
+  const modif = await (await putAvis({ verdict: "bien" }, j.cookie)).json();
+  assert.equal(modif.repas[repas.id].avis.J.verdict, "bien");
+  assert.equal(modif.repas[repas.id].avis.J.cree_le, creeLe);
+
+  // Grégoire retire le sien : celui de Jérôme reste
+  const retrait = await (await supprimer(url, g.cookie)).json();
+  assert.deepEqual(Object.keys(retrait.repas[repas.id].avis), ["J"]);
+
+  // Lecture par « batch cooking »
+  const lu = await (await fetch(`${base}/api/avis`, { headers: ADMIN })).json();
+  assert.equal(lu.format, "quick-cooking/avis");
+  assert.equal(lu.periode, p.id);
+  assert.deepEqual(lu.repas[repas.id].plat, { ref: repas.plat.ref, nom: repas.plat.nom });
+  assert.equal(lu.repas[repas.id].numero, repas.numero);
+  assert.equal(lu.verdicts.coup_de_coeur, "Coup de cœur");
+  assert.equal(lu.etiquettes.recette_modifiee, "Recette modifiée");
+  assert.deepEqual((await (await fetch(`${base}/api/avis/2000-01-01`, { headers: ADMIN })).json()).repas, {});
+
+  // Nouvelle période courante : l'ancienne reste lisible, plus modifiable
+  assert.equal((await put("/api/export/periode_courante", { ...p, id: "2099-01-01" }, ADMIN)).status, 200);
+  assert.equal((await putAvis({ verdict: "bof" }, j.cookie)).status, 409);
+  const ancienne = await (await fetch(`${base}/api/avis/${p.id}`, { headers: ADMIN })).json();
+  assert.equal(ancienne.repas[repas.id].avis.J.verdict, "bien");
+  assert.equal((await put("/api/export/periode_courante", p, ADMIN)).status, 200);
+});
+
+test("codes d'invitation : 10 essais par minute au plus", async () => {
+  let statut = 0;
+  for (let i = 0; i < 12 && statut !== 429; i++) statut = (await post("/api/passkeys/creation/options", { code: "AAAA-AAAA", personne: "J" })).status;
+  assert.equal(statut, 429);
 });

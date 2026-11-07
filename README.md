@@ -41,6 +41,9 @@ Variables d'environnement :
 | `DATA_DIR` | `./data` | export déposé (`export.json`) et choix (`choix/<periode>.json`) |
 | `IMPORT_TOKEN` | vide = administration désactivée | jeton d'administration : dépôt de l'export, autorisation des appareils |
 | `APPAREILS_MODE` | `libre` | `libre` : tout appareil utilise le site (il est seulement enregistré) ; `autorises` : seuls les appareils autorisés |
+| `RP_ID` | `quick-cooking.lo2k.net` | domaine des passkeys (`localhost` en local) |
+| `RP_ORIGIN` | `https://<RP_ID>` | origine exacte vue par le navigateur (`http://localhost:3000` en local) ; en `http://localhost` le cookie de session n'est pas `Secure` |
+| `ADMINS` | `J` | codes des personnes dont les passkeys administrent (liste séparée par des virgules) |
 
 Sans export déposé, le site sert [`exemple/export.json`](exemple/export.json), régénérable depuis le
 dépôt « batch cooking » :
@@ -56,7 +59,8 @@ python outils/construire_exemple.py
 | `server.mjs` | serveur HTTP (statique + API), sans dépendance |
 | `lib/contrat.mjs` | validation de l'export, normalisation et validation des choix |
 | `lib/stockage.mjs` | fichiers de `DATA_DIR`, écritures atomiques, file d'attente par période |
-| `public/` | page unique : `js/app.js` (vues), `js/regles.js` (contrôles), `js/recherche.js`, `js/markdown.js` |
+| `lib/passkeys.mjs` | passkeys (vérification WebAuthn avec `node:crypto`), codes d'invitation, sessions |
+| `public/` | page unique : `js/app.js` (vues), `js/regles.js` (contrôles), `js/recherche.js`, `js/markdown.js`, `js/avis.js` (verdicts et étiquettes) |
 | `exemple/export.json` | données d'exemple : 196 fiches réelles, période S40-S41, période à venir fictive |
 | `outils/construire_exemple.py` | implémentation de référence de l'export, à reprendre côté « batch cooking » |
 
@@ -70,6 +74,8 @@ Tout est stocké en JSON dans `DATA_DIR`, monté sur le PVC `quick-cooking-data`
 | `choix/<periode>.json` | choix de la famille pour la période à venir |
 | `courses/<periode>.json` | cases cochées de la liste de courses, partagées entre appareils |
 | `appareils.json` | appareils connus : empreinte de la clé, nom, navigateur, statut, dates |
+| `passkeys.json` | passkeys (clé publique, personne, nom d'appareil, dates, révocation), empreintes des codes d'invitation et des sessions |
+| `avis/<periode>.json` | avis de la famille sur les plats de la période courante |
 
 Écritures atomiques et en file d'attente par fichier ; un seul pod (`replicas: 1`, `Recreate`).
 
@@ -90,6 +96,35 @@ curl -X PUT -H "Authorization: Bearer $IMPORT_TOKEN" -H "Content-Type: applicati
 ```
 
 Un appareil non autorisé voit alors un écran « Appareil en attente » où il peut se nommer.
+
+## Passkeys et avis sur les plats
+
+Le site se lit sans compte. Pour **donner un avis** sur un plat de la semaine (verdict, étiquettes,
+commentaire), il faut être connecté par **passkey** : empreinte, visage ou code du téléphone. Chaque
+passkey est liée à une personne du foyer (« Qui je suis ») ; le serveur ne garde que sa clé publique.
+Une fois connecté, « Je suis » prend cette identité pour les avis, les cases de courses et les choix.
+
+Créer une passkey demande un **code d'invitation** (8 caractères, usage unique, 24 h). Les passkeys de
+Jérôme (`ADMINS`) ouvrent la section « Administration » de la page « Mon identité » (`#/moi`) : créer
+un code, lister les passkeys, en révoquer une (ses sessions tombent aussitôt ; elle reste listée).
+
+Amorçage (première passkey) ou secours si plus aucune passkey d'administration n'est active :
+
+```bash
+curl -X POST -H "Authorization: Bearer $IMPORT_TOKEN" -H "Content-Type: application/json" -d '{}' \
+  https://quick-cooking.lo2k.net/api/invitations
+# → { "code": "K7QM-2XPA", "expire": "…" } : à saisir dans « Mon identité » sur le téléphone de Jérôme
+```
+
+À savoir :
+
+- Une passkey **synchronisée** (trousseau iCloud, gestionnaire Google) est la même sur tous les appareils
+  du compte : la révoquer la coupe partout.
+- Une passkey créée sur `localhost` ne marche pas en production (autre `RP_ID`), et inversement.
+- « batch cooking » relit les avis avec `GET /api/avis` (voir
+  [`docs/donnees-entree-batch-cooking.md`](docs/donnees-entree-batch-cooking.md) §5 bis).
+- Test en local : `RP_ID=localhost RP_ORIGIN=http://localhost:3000 IMPORT_TOKEN=x npm run dev`, puis
+  dans Chrome, DevTools ▸ WebAuthn ▸ authentificateur virtuel si l'ordinateur n'a pas de capteur.
 
 ## Points ouverts avant la mise en ligne
 

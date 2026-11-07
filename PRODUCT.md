@@ -47,6 +47,11 @@ contraintes (aversions, cibles de protéines, qui mange à la maison quel midi) 
   plats numérotés en pastilles, lecture instantanée.
 - Appareils identifiés par une clé aléatoire, sans compte ; fermeture possible aux seuls appareils
   autorisés.
+- Personnes identifiées par passkey (empreinte ou visage sur leur téléphone), créée avec un code
+  d'invitation et liée à Jérôme, Pauline ou Grégoire ; Jérôme administre (codes, révocation). La
+  lecture reste ouverte ; noter un plat exige la passkey.
+- Avis sur les plats de la période courante (Coup de cœur, Bien, Bof, Plus jamais, étiquettes,
+  commentaire), visibles par la famille et relus par « batch cooking » pour raffiner la suite.
 
 ## Capabilities and Constraints
 

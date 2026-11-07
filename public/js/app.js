@@ -1,4 +1,5 @@
 // Interface de Quick Cooking : routes par ancre (#/semaine, #/courses, #/choisir, #/recettes).
+import { ETIQUETTES, libelleEtiquette, libelleVerdict, LONGUEUR_COMMENTAIRE, VERDICTS } from "./avis.js";
 import { rendreMarkdown } from "./markdown.js";
 import { appareilsConnus, chercher, CRITERES_VIDES } from "./recherche.js";
 import { alertesRecette, articlesAConsommer, evaluerPeriode, indexRecettes, macrosParJour, pire, repasAvantEcheance, resteVeille, usageStocks } from "./regles.js";
@@ -22,6 +23,12 @@ const etat = {
   coursesRangees: new Set(), // ids des lignes rangées dans « Déjà cochées » (propre à l'appareil)
   coursesRangeesPeriode: null,
   appareil: null, // { id, nom, statut, mode, autorise }
+  session: null, // { personne, admin, passkey, nom } quand une passkey a ouvert une session
+  avis: null, // avis de la famille sur la période courante (format quick-cooking/avis)
+  avisCible: null, // repas dont le tiroir d'avis est ouvert
+  avisModifie: false, // saisie du tiroir d'avis pas encore enregistrée
+  admin: null, // liste des passkeys (administration)
+  invitation: null, // dernier code d'invitation créé { code, expire }
 };
 
 // ---------- Stockage local (préférences de l'appareil, jamais indispensable) ----------
@@ -104,6 +111,7 @@ const ICONES = {
   alerte: '<path d="M12 3l9.5 17h-19z"/><path d="M12 10v4.5M12 17.5v.01"/>',
   info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5.5M12 7.5v.01"/>',
   ok: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+  cle: '<circle cx="8" cy="15" r="4.5"/><path d="M11.2 11.8L20 3M16 7l3 3M13.5 9.5l2.5 2.5"/>',
 };
 const icone = (nom) =>
   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONES[nom]}</svg>`;
@@ -230,11 +238,19 @@ const dateLongue = (iso) =>
 
 // ---------- En-tête : qui suis-je ----------
 function rendreMoi() {
+  const s = etat.session;
+  // Connecté par passkey : l'identité est celle de la clé, on ne la bascule plus à la main.
+  if (s) {
+    $("#moi").innerHTML = `<span class="moi-libelle">Je suis</span><a class="moi-session" href="#/moi" aria-label="${esc(nomDe(s.personne))}, connecté par passkey : mon identité"${
+      etat.route === "moi" ? ' aria-current="page"' : ""}><span class="nom-court" aria-hidden="true">${esc(s.personne)}</span><span class="nom-long" aria-hidden="true">${esc(nomDe(s.personne))}</span></a>`;
+    return;
+  }
   $("#moi").innerHTML =
     `<span class="moi-libelle">Je suis</span>` +
     personnes()
       .map((p) => `<button type="button" data-action="moi" data-code="${esc(p.code)}" aria-pressed="${etat.moi === p.code}" aria-label="${esc(p.nom)}"><span class="nom-court" aria-hidden="true">${esc(p.code)}</span><span class="nom-long" aria-hidden="true">${esc(p.nom)}</span></button>`)
-      .join("");
+      .join("") +
+    `<a class="moi-cle" href="#/moi" aria-label="Me connecter avec une passkey"${etat.route === "moi" ? ' aria-current="page"' : ""}>${icone("cle")}</a>`;
 }
 
 function rendreCompteur() {
@@ -351,7 +367,7 @@ function vueAccueil() {
   return `<h1 class="visuellement-cache">Quick Cooking : prochain repas</h1><div class="accueil">
       ${tableauProchain(prochain)}
       ${departs.length ? `<section aria-labelledby="t-ensuite"><div class="section-tete"><h2 id="t-ensuite">Ensuite</h2><a class="lien" href="#/semaine">Toute la semaine</a></div>
-        <ol class="departs">${departs.map((x) => ligneDepart(x)).join("")}</ol></section>` : ""}
+        <ol class="departs">${departs.map((x) => ligneDepart(x, { details: x.periode === c ? ligneAvis(x.r) : "" })).join("")}</ol></section>` : ""}
       <div class="accueil-suite">${choix}${courses}</div>
     </div>${origineDonnees()}`;
 }
@@ -361,7 +377,7 @@ function origineDonnees() {
   const a = etat.appareil;
   return `<p class="pied discret">Menus mis à jour le ${esc(dateLongue(d.genere_le))} · ${d.recettes.length} recettes dans la base${
     d.source?.includes("exemple") ? " · <b>données d'exemple</b>" : ""}</p>
-    ${a ? `<details class="pied appareil"><summary class="discret">Cet appareil${a.nom ? ` : ${esc(a.nom)}` : ""}</summary>${formulaireAppareil(a)}</details>` : ""}`;
+    ${a ? `<p class="pied appareil"><a class="lien" href="#/moi">${etat.session ? `Connecté : ${esc(nomDe(etat.session.personne))}` : "Me connecter"} · cet appareil${a.nom ? ` (${esc(a.nom)})` : ""}</a></p>` : ""}`;
 }
 
 function formulaireAppareil(a) {
@@ -410,6 +426,7 @@ function vueSemaine() {
             r.plat?.note ? `<p class="plat-note">${esc(r.plat.note)}</p>` : "",
             r.plat?.portion && r.plat.portion !== 1 ? `<p class="plat-note">Portion ${r.plat.portion < 1 ? "légère" : "copieuse"}</p>` : "",
             rec ? `<p class="plat-meta">${boutonFiche(rec.ref, "Ouvrir la recette", r.numero)}${chiffres(rec, r.plat?.portion ?? 1)}</p>` : "",
+            ligneAvis(r),
             alertesHtml((evalu.parRepas[r.id] || []).filter((a) => a.niveau !== "info")),
           ].join("");
           const x = { r, j, nom: r.plat?.nom ?? "—", numero: r.numero };
@@ -1109,8 +1126,301 @@ function rafraichirTiroir() {
   if (etat.cible) ouvrirTiroir(etat.cible);
 }
 
+// ---------- Identité : passkeys ----------
+// Le navigateur donne la clé publique en SPKI (getPublicKey) : le serveur n'a pas de CBOR à décoder.
+const versB64 = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+const deB64 = (s) => Uint8Array.from(atob(s.replace(/-/g, "+").replace(/_/g, "/") + "=".repeat((4 - (s.length % 4)) % 4)), (c) => c.charCodeAt(0));
+const passkeysPossibles = () =>
+  Boolean(window.PublicKeyCredential && navigator.credentials?.create && window.AuthenticatorAttestationResponse?.prototype.getPublicKey);
+
+/** Message lisible pour une erreur du geste passkey. */
+function raisonPasskey(e) {
+  if (e?.name === "NotAllowedError") return "Geste annulé ou délai dépassé. Rien n'a été enregistré : réessayez.";
+  if (e?.name === "InvalidStateError") return "Ce téléphone a déjà une passkey pour ce site.";
+  if (e?.name === "SecurityError") return "Ce site ne peut pas créer de passkey ici (adresse non sécurisée).";
+  return e instanceof TypeError ? "Pas de connexion au site. Vérifiez le réseau, puis réessayez." : e?.message || "Erreur inconnue.";
+}
+
+function ouvrirSession(s) {
+  etat.session = s?.personne ? s : null;
+  etat.moi = etat.session ? etat.session.personne : lireLocal("qc-moi", null);
+  etat.admin = null;
+}
+
+async function seConnecter() {
+  const o = await api("/api/passkeys/connexion/options", { method: "POST", body: "{}" });
+  const cred = await navigator.credentials.get({
+    publicKey: { challenge: deB64(o.challenge), rpId: o.rpId, userVerification: o.userVerification, timeout: o.timeout, allowCredentials: [] },
+  });
+  const r = cred.response;
+  ouvrirSession(await api("/api/passkeys/connexion", {
+    method: "POST",
+    body: JSON.stringify({ id: cred.id, clientDataJSON: versB64(r.clientDataJSON), authenticatorData: versB64(r.authenticatorData), signature: versB64(r.signature) }),
+  }));
+}
+
+async function creerPasskey({ personne, code, nom }) {
+  const o = await api("/api/passkeys/creation/options", { method: "POST", body: JSON.stringify({ personne, code, nom }) });
+  const cred = await navigator.credentials.create({ publicKey: { ...o, challenge: deB64(o.challenge), user: { ...o.user, id: deB64(o.user.id) } } });
+  const r = cred.response;
+  ouvrirSession(await api("/api/passkeys/creation", {
+    method: "POST",
+    body: JSON.stringify({
+      id: cred.id, clientDataJSON: versB64(r.clientDataJSON), authenticatorData: versB64(r.getAuthenticatorData()),
+      publicKey: versB64(r.getPublicKey()), publicKeyAlgorithm: r.getPublicKeyAlgorithm(),
+    }),
+  }));
+}
+
+/** Nom proposé pour l'appareil : « iPhone · Safari ». */
+function nomAppareilParDefaut() {
+  if (etat.appareil?.nom) return etat.appareil.nom;
+  const ua = navigator.userAgent;
+  const os = /iPhone/.test(ua) ? "iPhone" : /iPad/.test(ua) ? "iPad" : /Android/.test(ua) ? "Android" : /Windows/.test(ua) ? "Windows" : /Mac OS/.test(ua) ? "Mac" : "Appareil";
+  const nav = /Edg\//.test(ua) ? "Edge" : /Firefox\//.test(ua) ? "Firefox" : /Chrome\//.test(ua) ? "Chrome" : /Safari\//.test(ua) ? "Safari" : "";
+  return [os, nav].filter(Boolean).join(" · ");
+}
+
+const initiale = (code) => `<span class="initiale" aria-hidden="true">${esc(code)}</span>`;
+
+function vueMoi() {
+  const s = etat.session;
+  const a = etat.appareil;
+  const appareil = a ? `<section class="etat-ligne" aria-labelledby="t-appareil"><h2 id="t-appareil">Cet appareil</h2>${formulaireAppareil(a)}</section>` : "";
+  if (s) {
+    if (s.admin && etat.admin === null) chargerAdmin();
+    return `<header class="tete-page"><h1>Mon identité</h1></header>
+      <div class="identite">
+        <section class="etat-ligne" aria-labelledby="t-qui"><h2 id="t-qui" class="visuellement-cache">Connecté</h2>
+          <p class="identite-qui">${initiale(s.personne)}<span><b>${esc(nomDe(s.personne))}</b><span class="discret">Connecté avec la passkey « ${esc(s.nom)} »</span></span></p>
+          <p>Tes avis sur les plats portent ton nom. Les cases de courses et les choix aussi.</p>
+          <button type="button" class="bouton secondaire" data-action="deconnexion">Me déconnecter</button>
+        </section>
+        ${s.admin ? vueAdmin() : ""}
+        ${appareil}
+      </div>`;
+  }
+  const possible = passkeysPossibles();
+  return `<header class="tete-page"><h1>Mon identité</h1>
+      <p class="note">Une passkey relie ce téléphone à ta personne : empreinte, visage ou code du téléphone, aucun mot de passe. Le site ne garde qu'une clé publique.</p></header>
+    <div class="identite">
+      ${possible ? `<section class="etat-ligne" aria-labelledby="t-cx"><h2 id="t-cx">J'ai déjà une passkey</h2>
+          <button type="button" class="bouton" data-action="connexion">Me connecter</button></section>
+        <section class="etat-ligne" aria-labelledby="t-creer"><h2 id="t-creer">Créer une passkey sur ce téléphone</h2>
+          <p class="discret">Il faut un code d'invitation, à demander à Jérôme. Il sert une seule fois.</p>
+          <form class="form-passkey" data-action="creer-passkey" novalidate>
+            <label class="champ"><span>Qui je suis</span>
+              <select name="personne" required><option value="" selected disabled>Choisir…</option>${personnes().map((p) => `<option value="${esc(p.code)}">${esc(p.nom)}</option>`).join("")}</select></label>
+            <label class="champ"><span>Code d'invitation</span>
+              <input type="text" name="code" required autocomplete="one-time-code" autocapitalize="characters" spellcheck="false" maxlength="12" placeholder="XXXX-XXXX"></label>
+            <label class="champ"><span>Nom de ce téléphone</span>
+              <input type="text" name="nom" maxlength="60" value="${esc(nomAppareilParDefaut())}"></label>
+            <p class="form-erreur niv-attention" role="alert" hidden></p>
+            <button type="submit" class="bouton">Créer ma passkey</button>
+          </form></section>`
+        : `<p class="bandeau niv-info">Ce navigateur ne permet pas de créer ni d'utiliser une passkey. Le site reste lisible ; pour donner un avis, ouvrez-le sur un téléphone récent (Safari, Chrome ou Firefox à jour).</p>`}
+      ${appareil}
+    </div>`;
+}
+
+async function chargerAdmin() {
+  etat.admin = "chargement";
+  try {
+    etat.admin = (await api("/api/passkeys")).passkeys;
+  } catch (e) {
+    etat.admin = { erreur: e.message };
+  }
+  if (etat.route === "moi") rafraichir();
+}
+
+function vueAdmin() {
+  const inv = etat.invitation;
+  const liste = etat.admin;
+  const lignes = Array.isArray(liste)
+    ? `<ul class="liste-passkeys">${[...liste].reverse().map((p) => `<li class="${p.revoquee_le ? "revoquee" : ""}">
+        ${initiale(p.personne)}
+        <div><p class="pk-nom"><b>${esc(nomDe(p.personne))}</b> · ${esc(p.nom)}${p.id === etat.session.passkey ? ` <span class="badge">ce téléphone</span>` : ""}</p>
+          <p class="discret petit">Créée le ${esc(dateLongue(p.cree_le))} · dernier usage ${esc(dateLongue(p.vu_le))}${p.revoquee_le ? ` · <b>révoquée</b> le ${esc(dateLongue(p.revoquee_le))}` : ""}</p></div>
+        ${p.revoquee_le ? "" : `<button type="button" class="bouton secondaire" data-action="revoquer" data-id="${esc(p.id)}">Révoquer</button>`}</li>`).join("")}</ul>`
+    : liste?.erreur ? `<p class="bandeau niv-attention">Liste indisponible : ${esc(liste.erreur)}</p>` : `<p class="discret">Chargement des passkeys…</p>`;
+  return `<section class="etat-ligne admin" aria-labelledby="t-admin"><h2 id="t-admin">Administration</h2>
+      <div class="invitation">
+        ${inv ? `<p class="code-invitation"><span class="visuellement-cache">Code d'invitation : </span>${esc(inv.code)}</p>
+          <p class="discret">Valable une seule fois, jusqu'au ${esc(dateLongue(inv.expire))}. Il ne sera plus affiché après avoir quitté cette page.</p>` : ""}
+        <div class="repas-actions">
+          <button type="button" class="bouton" data-action="inviter">Créer un code d'invitation</button>
+          ${inv ? `<button type="button" class="bouton secondaire" data-action="copier-code">Copier le code</button>` : ""}
+        </div>
+      </div>
+      <h3>Passkeys</h3>${lignes}
+    </section>`;
+}
+
+// Fenêtre de confirmation : remplace window.confirm, dans le style du site.
+function confirmer(titre, texte, ok) {
+  const d = $("#confirmer");
+  $("#confirmer-titre").textContent = titre;
+  $("#confirmer-texte").textContent = texte;
+  $("#confirmer-ok").textContent = ok;
+  d.returnValue = "";
+  d.showModal();
+  $("#confirmer-non").focus();
+  return new Promise((resolve) => d.addEventListener("close", () => resolve(d.returnValue === "oui"), { once: true }));
+}
+
+async function revoquerPasskey(id) {
+  const p = etat.admin.find((x) => x.id === id);
+  const derniere = p.personne === etat.session.personne && etat.admin.filter((x) => x.personne === p.personne && !x.revoquee_le).length === 1;
+  const texte = `${nomDe(p.personne)} ne pourra plus donner d'avis depuis cet appareil. ` +
+    (derniere ? "C'est ta dernière passkey : tu perdras l'accès à l'administration, et il faudra un nouveau code créé avec le jeton IMPORT_TOKEN."
+      : p.id === etat.session.passkey ? "C'est la passkey de ce téléphone : tu seras déconnecté." : "La passkey reste dans la liste, marquée « révoquée ».");
+  if (!(await confirmer(`Révoquer « ${p.nom} » ?`, texte, "Révoquer"))) return;
+  try {
+    await api(`/api/passkeys/${encodeURIComponent(id)}`, { method: "DELETE" });
+    toast("Passkey révoquée");
+    if (id === etat.session.passkey) ouvrirSession(await api("/api/session"));
+    else etat.admin = null;
+  } catch (e) {
+    toast(`Non révoquée : ${e.message}`, "interdit");
+  }
+  rafraichir();
+}
+
+// ---------- Avis sur les plats ----------
+async function chargerAvis() {
+  etat.avis = periodeCourante() ? await api("/api/avis").catch(() => null) : null;
+}
+
+const avisDe = (repasId) => etat.avis?.repas?.[repasId]?.avis || {};
+const avisTries = (repasId) => {
+  const ordre = personnes().map((p) => p.code);
+  return Object.entries(avisDe(repasId)).sort(([a], [b]) => ordre.indexOf(a) - ordre.indexOf(b));
+};
+const verdict = (v) => `<span class="verdict v-${esc(v)}">${esc(libelleVerdict(v))}</span>`;
+const avisOuvert = (r) => {
+  const p = periodeCourante();
+  return Boolean(p && etat.avis?.periode === p.id && p.repas.includes(r) && (r.plat?.ref || r.plat?.nom));
+};
+
+/** Sous un repas de la période courante : les avis en une ligne, et l'entrée vers le tiroir. */
+function ligneAvis(r) {
+  if (!avisOuvert(r)) return "";
+  const avis = avisTries(r.id);
+  const mien = etat.session ? avisDe(r.id)[etat.session.personne] : null;
+  const resume = avis.length
+    ? `<p class="avis-ligne"><span class="visuellement-cache">Avis : </span>${avis.map(([c, a]) =>
+      `<span class="avis-court"><b aria-label="${esc(nomDe(c))}">${esc(c)}</b> ${verdict(a.verdict)}${a.commentaire ? `<span class="discret"> + commentaire</span>` : ""}</span>`).join("")}</p>`
+    : "";
+  const libelle = mien ? `Mon avis : ${esc(libelleVerdict(mien.verdict))} · modifier` : "Donner mon avis";
+  return `<div class="avis-bloc">${resume}<button type="button" class="lien" data-action="avis" data-repas="${esc(r.id)}">${libelle}</button></div>`;
+}
+
+function formulaireAvis(mien) {
+  return `<form class="form-avis" id="form-avis" novalidate>
+    <p class="form-erreur niv-attention" role="alert" hidden></p>
+    <fieldset class="verdicts"><legend>Mon verdict</legend>
+      <div class="verdicts-grille">${VERDICTS.map(([id, l]) =>
+        `<label class="verdict-choix"><input type="radio" name="verdict" value="${id}"${mien?.verdict === id ? " checked" : ""}><span>${esc(l)}</span></label>`).join("")}</div>
+    </fieldset>
+    <fieldset class="etiquettes"><legend>Ce qui a compté <span class="discret">(facultatif)</span></legend>
+      <div class="filtres">${ETIQUETTES.map(([id, l]) =>
+        `<label class="filtre"><input type="checkbox" name="etiquettes" value="${id}"${mien?.etiquettes?.includes(id) ? " checked" : ""}> ${esc(l)}</label>`).join("")}</div>
+    </fieldset>
+    <label class="champ avis-commentaire"><span>Ce qu'on a changé, ce qu'on a aimé</span>
+      <textarea name="commentaire" rows="4" maxlength="${LONGUEUR_COMMENTAIRE}" aria-describedby="avis-aide avis-compte">${esc(mien?.commentaire ?? "")}</textarea></label>
+    <p class="discret petit" id="avis-aide" hidden>Dis ce que tu as changé : ça aidera pour la prochaine fois.</p>
+    <p class="discret petit" id="avis-compte" aria-live="polite"></p>
+    <div class="avis-pied">
+      <button type="submit" class="bouton"${mien ? "" : " disabled"}>Enregistrer</button>
+      ${mien ? `<button type="button" class="lien danger" data-action="retirer-avis">Retirer mon avis</button>` : ""}
+    </div>
+  </form>`;
+}
+
+function ouvrirAvis(repasId) {
+  const p = periodeCourante();
+  const r = p.repas.find((x) => x.id === repasId);
+  if (!r) return;
+  const j = jourDe(p, r.jour);
+  const moi = etat.session?.personne;
+  const autres = avisTries(repasId).filter(([c]) => c !== moi);
+  etat.avisCible = repasId;
+  etat.avisModifie = false;
+  const connexion = `<section class="avis-connexion niv-info" aria-labelledby="t-avis-cx"><h3 id="t-avis-cx">Pour donner ton avis, connecte ce téléphone</h3>
+      <p>Ton avis portera ton nom : il faut une passkey (empreinte, visage ou code du téléphone).</p>
+      <div class="repas-actions">${passkeysPossibles() ? `<button type="button" class="bouton" data-action="connexion" data-puis="avis">Me connecter</button>` : ""}
+        <a class="lien" href="#/moi">Créer une passkey</a></div></section>`;
+  $("#avis-corps").innerHTML = `<div class="fenetre-tete"><div class="fiche-titre">${pastille(r.numero, "grande")}<div><h2 id="avis-titre">${esc(r.plat.nom ?? "Plat")}</h2>
+        <p class="avis-quand">${esc(j?.label ?? "")} ${esc(LIBELLE_MOMENT[r.moment].toLowerCase())}</p></div></div>
+      <button type="button" class="fermer" data-action="fermer-avis" aria-label="Fermer">${icone("fermer")}</button></div>
+    ${moi ? formulaireAvis(avisDe(repasId)[moi]) : connexion}
+    ${autres.length ? `<section class="avis-autres" aria-labelledby="t-autres"><h3 id="t-autres">Les autres</h3><ul>${autres.map(([c, a]) => `<li>
+        ${initiale(c)}<div><p><b>${esc(nomDe(c))}</b> ${verdict(a.verdict)} <span class="discret petit">${esc(dateLongue(a.mis_a_jour))}</span></p>
+        ${a.etiquettes?.length ? `<p class="petit">${a.etiquettes.map((e) => esc(libelleEtiquette(e))).join(" · ")}</p>` : ""}
+        ${a.commentaire ? `<p class="avis-texte">${esc(a.commentaire)}</p>` : ""}</div></li>`).join("")}</ul></section>`
+      : moi ? "" : `<p class="discret avis-vide">Personne n'a encore donné d'avis sur ce plat.</p>`}`;
+  majFormulaireAvis();
+  if (!$("#avis").open) $("#avis").showModal();
+  ($("#form-avis input[name=verdict]:checked") || $("#form-avis input[name=verdict]") || $("#avis .fermer")).focus();
+}
+
+/** Compteur, aide « Recette modifiée », bouton Enregistrer actif dès qu'un verdict est choisi. */
+function majFormulaireAvis() {
+  const f = $("#form-avis");
+  if (!f) return;
+  const reste = LONGUEUR_COMMENTAIRE - f.commentaire.value.length;
+  $("#avis-compte").textContent = reste < 100 ? `${reste} caractère${reste > 1 ? "s" : ""} restant${reste > 1 ? "s" : ""}` : "";
+  $("#avis-aide").hidden = !(f.querySelector("input[value=recette_modifiee]").checked && !f.commentaire.value.trim());
+  $("button[type=submit]", f).disabled = !f.verdict.value;
+}
+
+async function fermerAvis() {
+  if (etat.avisModifie && !(await confirmer("Abandonner ton avis ?", "Ta saisie n'est pas enregistrée.", "Abandonner"))) return;
+  etat.avisModifie = false;
+  $("#avis").close();
+}
+
+const urlAvis = () => `/api/avis/${encodeURIComponent(periodeCourante().id)}/${encodeURIComponent(etat.avisCible)}`;
+const raisonReseau = (e) => (e instanceof TypeError ? "pas de connexion au site" : e.message);
+
+async function enregistrerAvis(f) {
+  const bouton = $("button[type=submit]", f);
+  const erreur = $(".form-erreur", f);
+  erreur.hidden = true;
+  bouton.disabled = true;
+  bouton.textContent = "Enregistrement…";
+  try {
+    etat.avis = await api(urlAvis(), {
+      method: "PUT",
+      body: JSON.stringify({ verdict: f.verdict.value, etiquettes: [...f.querySelectorAll("input[name=etiquettes]:checked")].map((i) => i.value), commentaire: f.commentaire.value }),
+    });
+    etat.avisModifie = false;
+    $("#avis").close();
+    toast("Avis enregistré");
+    rafraichir();
+  } catch (e) {
+    erreur.textContent = `Avis non enregistré (${raisonReseau(e)}). Ta saisie est gardée : réessaie.`;
+    erreur.hidden = false;
+    bouton.textContent = "Enregistrer";
+    bouton.disabled = false;
+    erreur.scrollIntoView({ block: "nearest" });
+  }
+}
+
+async function retirerAvis() {
+  try {
+    etat.avis = await api(urlAvis(), { method: "DELETE" });
+    etat.avisModifie = false;
+    $("#avis").close();
+    toast("Avis retiré");
+    rafraichir();
+  } catch (e) {
+    toast(`Avis non retiré : ${raisonReseau(e)}`, "interdit");
+  }
+}
+
 // ---------- Routeur ----------
-const VUES = { "": vueAccueil, semaine: vueSemaine, courses: vueCourses, choisir: vueChoisir, recettes: vueRecettes };
+const VUES = { "": vueAccueil, semaine: vueSemaine, courses: vueCourses, choisir: vueChoisir, recettes: vueRecettes, moi: vueMoi };
 
 function rafraichir({ defiler = false } = {}) {
   const route = (location.hash.replace(/^#\/?/, "").split("/")[0] || "");
@@ -1139,7 +1449,9 @@ function rafraichir({ defiler = false } = {}) {
 document.addEventListener("click", (ev) => {
   const el = ev.target.closest("[data-action]");
   if (!el) {
-    if (ev.target.tagName === "DIALOG") ev.target.close(); // clic hors du panneau
+    // Clic hors du panneau ; le tiroir d'avis demande confirmation si la saisie n'est pas enregistrée.
+    if (ev.target.id === "avis") fermerAvis();
+    else if (ev.target.tagName === "DIALOG") ev.target.close();
     return;
   }
   const { action, repas, ref } = el.dataset;
@@ -1186,7 +1498,57 @@ document.addEventListener("click", (ev) => {
     rafraichir();
     $(".tete-page h1")?.focus();
   }
+  else if (action === "avis") ouvrirAvis(repas);
+  else if (action === "fermer-avis") fermerAvis();
+  else if (action === "retirer-avis") retirerAvis();
+  else if (action === "connexion") actionConnexion(el);
+  else if (action === "deconnexion") deconnexion();
+  else if (action === "inviter") inviter();
+  else if (action === "copier-code") {
+    navigator.clipboard?.writeText(etat.invitation.code).then(() => toast("Code copié"), () => toast("Copie impossible : recopiez le code à la main.", "attention"));
+  } else if (action === "revoquer") revoquerPasskey(el.dataset.id);
 });
+
+async function actionConnexion(el) {
+  el.disabled = true;
+  try {
+    await seConnecter();
+    toast(`Connecté : ${nomDe(etat.session.personne)}`);
+    rafraichir();
+    if (el.dataset.puis === "avis" && etat.avisCible && $("#avis").open) ouvrirAvis(etat.avisCible);
+  } catch (e) {
+    toast(raisonPasskey(e), "attention");
+    el.disabled = false;
+  }
+}
+
+async function deconnexion() {
+  try {
+    ouvrirSession(await api("/api/session", { method: "DELETE" }));
+    toast("Déconnecté");
+  } catch (e) {
+    toast(`Déconnexion impossible : ${raisonReseau(e)}`, "interdit");
+  }
+  rafraichir();
+}
+
+async function inviter() {
+  try {
+    etat.invitation = await api("/api/invitations", { method: "POST", body: "{}" });
+    rafraichir();
+    $(".code-invitation")?.scrollIntoView({ block: "center" });
+  } catch (e) {
+    toast(`Code non créé : ${raisonReseau(e)}`, "interdit");
+  }
+}
+
+// Saisie du tiroir d'avis : note qu'elle a changé, met à jour compteur, aide et bouton.
+for (const type of ["input", "change"])
+  document.addEventListener(type, (ev) => {
+    if (!ev.target.closest("#form-avis")) return;
+    etat.avisModifie = true;
+    majFormulaireAvis();
+  });
 
 document.addEventListener("change", (ev) => {
   const el = ev.target;
@@ -1195,7 +1557,35 @@ document.addEventListener("change", (ev) => {
 });
 
 document.addEventListener("submit", async (ev) => {
-  if (ev.target.dataset.action !== "nommer-appareil") return;
+  const f = ev.target;
+  if (f.id === "form-avis") {
+    ev.preventDefault();
+    if (f.verdict.value) enregistrerAvis(f);
+    return;
+  }
+  if (f.dataset.action === "creer-passkey") {
+    ev.preventDefault();
+    const erreur = $(".form-erreur", f);
+    const manque = !f.personne.value ? "Choisis qui tu es." : !f.code.value.trim() ? "Saisis le code d'invitation donné par Jérôme." : "";
+    erreur.textContent = manque;
+    erreur.hidden = !manque;
+    if (manque) return (!f.personne.value ? f.personne : f.code).focus();
+    const bouton = $("button[type=submit]", f);
+    bouton.disabled = true;
+    bouton.textContent = "Création…";
+    try {
+      await creerPasskey({ personne: f.personne.value, code: f.code.value, nom: f.nom.value });
+      toast(`Passkey créée : bienvenue ${nomDe(etat.session.personne)}`);
+      rafraichir();
+    } catch (e) {
+      erreur.textContent = raisonPasskey(e);
+      erreur.hidden = false;
+      bouton.disabled = false;
+      bouton.textContent = "Créer ma passkey";
+    }
+    return;
+  }
+  if (f.dataset.action !== "nommer-appareil") return;
   ev.preventDefault();
   try {
     etat.appareil = await api("/api/appareil", { method: "PUT", body: JSON.stringify({ nom: ev.target.nom.value }) });
@@ -1213,7 +1603,32 @@ document.addEventListener("visibilitychange", () => {
   const b = $("#fiche").open && $("#fiche .eveil[aria-pressed='true']");
   if (document.visibilityState === "visible" && b && !verrouEcran) basculerEveil(b);
 });
-window.addEventListener("hashchange", () => rafraichir());
+$("#avis").addEventListener("cancel", (ev) => {
+  ev.preventDefault(); // Échap : même confirmation que le bouton Fermer
+  fermerAvis();
+});
+$("#avis").addEventListener("close", () => (etat.avisCible = null));
+window.addEventListener("hashchange", () => {
+  // Lien « Créer une passkey » depuis le tiroir : on quitte le tiroir pour la page demandée.
+  if ($("#avis").open) $("#avis").close();
+  if (etat.route === "moi") etat.invitation = null; // le code ne se réaffiche pas
+  rafraichir();
+});
+
+// Les avis des autres apparaissent sans recharger.
+setInterval(async () => {
+  if (!["", "semaine"].includes(etat.route) || document.hidden || !etat.avis || !periodeCourante()) return;
+  if ($("#avis").open || document.activeElement?.matches("input, textarea, select")) return;
+  try {
+    const neuf = await api("/api/avis");
+    if (neuf.mis_a_jour !== etat.avis.mis_a_jour || neuf.periode !== etat.avis.periode) {
+      etat.avis = neuf;
+      rafraichir();
+    }
+  } catch {
+    /* réseau coupé : on réessaiera */
+  }
+}, 30000);
 
 // Les cases cochées par les autres apparaissent sans recharger (utile à deux dans le magasin).
 setInterval(async () => {
@@ -1253,14 +1668,16 @@ new ResizeObserver(([e]) => document.documentElement.style.setProperty("--dock-h
 // ---------- Démarrage ----------
 (async function demarrer() {
   try {
-    etat.appareil = await api("/api/appareil");
+    const [appareil, session] = await Promise.all([api("/api/appareil"), api("/api/session").catch(() => null)]);
+    etat.appareil = appareil;
+    ouvrirSession(session);
     if (!etat.appareil.autorise) {
       vue.innerHTML = vueAttente(etat.appareil);
       return;
     }
     etat.donnees = await api("/api/donnees");
     etat.index = indexRecettes(etat.donnees.recettes);
-    await Promise.all([chargerChoix(), chargerCourses()]);
+    await Promise.all([chargerChoix(), chargerCourses(), chargerAvis()]);
     rafraichir({ defiler: true });
   } catch (e) {
     vue.innerHTML = `<section class="tableau"><h2 class="tableau-moment">Menus indisponibles</h2>

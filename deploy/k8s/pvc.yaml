@@ -1,4 +1,4 @@
-# Quick Cooking — petit volume pour les fichiers JSON de DATA_DIR (export, choix, courses, appareils).
+# Quick Cooking — petit volume pour les fichiers JSON de DATA_DIR (export, choix, courses, appareils, passkeys, avis).
 # Quelques centaines de Ko au plus ; 1 Gi est le minimum pratique chez OVH Cinder.
 # ATTENTION : reclaim policy Delete — supprimer ce PVC ou le namespace efface les données (AGENTS.md règle 7).
 apiVersion: v1

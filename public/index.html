@@ -56,6 +56,21 @@
     <div class="fenetre-corps" id="tiroir-corps"></div>
   </dialog>
 
+  <dialog id="avis" class="fenetre avis" aria-labelledby="avis-titre">
+    <div class="fenetre-corps" id="avis-corps"></div>
+  </dialog>
+
+  <dialog id="confirmer" class="fenetre confirmer" aria-labelledby="confirmer-titre" aria-describedby="confirmer-texte">
+    <form method="dialog" class="confirmer-corps">
+      <h2 id="confirmer-titre"></h2>
+      <p id="confirmer-texte"></p>
+      <div class="repas-actions">
+        <button type="submit" value="non" class="bouton secondaire" id="confirmer-non">Annuler</button>
+        <button type="submit" value="oui" class="bouton" id="confirmer-ok"></button>
+      </div>
+    </form>
+  </dialog>
+
   <noscript><p class="chargement">Ce site a besoin de JavaScript.</p></noscript>
 </body>
 </html>
