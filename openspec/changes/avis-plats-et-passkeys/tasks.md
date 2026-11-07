@@ -35,8 +35,8 @@
 ## 6. Build et manifestes
 
 - [x] 6.1 `npm test` vert en entier. Vérif : sortie de `npm test`.
-- [ ] 6.2 Construire l'image `xblaster/quick-cooking:<AAAAMMJJ-sha7>` (linux/amd64) et vérifier en local `GET /` 200, `/healthz`, création et connexion passkey avec `RP_ID=localhost`. Vérif : `docker run` local selon `docs/deploiement.md`.
-- [ ] 6.3 Mettre à jour `deploy/k8s/deployment.yaml` : nouveau tag daté, variables `RP_ID=quick-cooking.lo2k.net`, `RP_ORIGIN=https://quick-cooking.lo2k.net`, `ADMINS=J` ; commentaire du volume listant `passkeys.json` et `avis/`. Vérif : `kubectl apply --dry-run=server -f deploy/k8s/deployment.yaml` sans erreur.
+- [x] 6.2 Construire l'image `xblaster/quick-cooking:<AAAAMMJJ-sha7>` (linux/amd64) et vérifier en local `GET /` 200, `/healthz`, création et connexion passkey avec `RP_ID=localhost`. Vérif : `docker run` local selon `docs/deploiement.md`.
+- [x] 6.3 Mettre à jour `deploy/k8s/deployment.yaml` : nouveau tag daté, variables `RP_ID=quick-cooking.lo2k.net`, `RP_ORIGIN=https://quick-cooking.lo2k.net`, `ADMINS=J` ; commentaire du volume listant `passkeys.json` et `avis/`. Vérif : `kubectl apply --dry-run=server -f deploy/k8s/deployment.yaml` sans erreur.
 
 ## 7. Déploiement (validation humaine)
 
