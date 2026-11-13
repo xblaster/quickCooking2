@@ -308,6 +308,7 @@ test("avis : session obligatoire, un avis par personne, période figée ensuite"
   assert.deepEqual(lu.repas[repas.id].plat, { ref: repas.plat.ref, nom: repas.plat.nom });
   assert.equal(lu.repas[repas.id].numero, repas.numero);
   assert.equal(lu.verdicts.coup_de_coeur, "Coup de cœur");
+  assert.equal(lu.verdicts.pas_realise, "Pas réalisé");
   assert.equal(lu.etiquettes.recette_modifiee, "Recette modifiée");
   assert.deepEqual((await (await fetch(`${base}/api/avis/2000-01-01`, { headers: ADMIN })).json()).repas, {});
 

@@ -420,7 +420,7 @@ restent lisibles quand elle a quitté l'export, mais ne sont plus modifiables).
       }
     }
   },
-  "verdicts": { "coup_de_coeur": "Coup de cœur", "bien": "Bien", "bof": "Bof", "plus_jamais": "Plus jamais" },
+  "verdicts": { "coup_de_coeur": "Coup de cœur", "bien": "Bien", "bof": "Bof", "plus_jamais": "Plus jamais", "pas_realise": "Pas réalisé" },
   "etiquettes": { "portion_petite": "Portion trop petite", "portion_grande": "Portion trop grande",
     "trop_sale": "Trop salé ou épicé", "fade": "Fade", "texture": "Texture ratée", "rechauffe_mal": "Réchauffe mal",
     "trop_long": "Trop long à préparer", "recette_modifiee": "Recette modifiée" }
@@ -431,7 +431,7 @@ restent lisibles quand elle a quitté l'export, mais ne sont plus modifiables).
 - Une personne = au plus un avis par repas. `commentaire` : 500 caractères au plus, souvent « ce qu'on a
   changé ».
 - Correspondance **indicative** avec `Preferences_Famille.md` (c'est toi qui décides, pas le site) :
-  `coup_de_coeur` → ⭐, `plus_jamais` → ❌, `bof` ou toute étiquette → ⚠️ à examiner, `bien` → rien.
+  `coup_de_coeur` → ⭐, `plus_jamais` → ❌, `bof` ou toute étiquette → ⚠️ à examiner, `bien` → rien, `pas_realise` → plat non cuisiné (ne pas intégrer aux goûts, à noter au RETEX).
   `recette_modifiee` + commentaire = ajustement à reporter sur la fiche.
 - Un avis isolé n'est pas une règle : signale-le dans ton procès-verbal, ne bannis pas en silence.
 

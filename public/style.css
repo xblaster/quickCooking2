@@ -709,6 +709,7 @@ body:not(.avec-dock) .toast { bottom: calc(74px + env(safe-area-inset-bottom)); 
 .verdict.v-bien { color: var(--texte); background: var(--surface-2); }
 .verdict.v-bof { color: var(--attention); background: var(--attention-fond); }
 .verdict.v-plus_jamais { color: var(--interdit); background: var(--interdit-fond); }
+.verdict.v-pas_realise { color: var(--quai-discret); background: var(--surface-2); }
 
 /* ---------- Avis : tiroir de saisie ---------- */
 @media (min-width: 641px) { .avis { width: min(640px, calc(100vw - 24px)); } }
@@ -720,7 +721,7 @@ body:not(.avec-dock) .toast { bottom: calc(74px + env(safe-area-inset-bottom)); 
 .verdicts legend, .etiquettes legend { padding: 0; margin-bottom: 10px; font-weight: 800; font-size: 1.1rem; }
 .etiquettes legend .discret { font-weight: 400; font-size: .95rem; }
 .verdicts-grille { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-@media (min-width: 561px) { .verdicts-grille { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (min-width: 561px) { .verdicts-grille { grid-template-columns: repeat(auto-fit, minmax(105px, 1fr)); } }
 .verdict-choix {
   position: relative; display: grid; place-items: center; min-height: 56px; padding: 6px 12px; text-align: center; cursor: pointer;
   border: 1.5px solid var(--filet); border-radius: 999px; background: var(--surface); font-weight: 800; font-size: 1.05rem; line-height: 1.2;

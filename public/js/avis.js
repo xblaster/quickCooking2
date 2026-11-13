@@ -6,6 +6,7 @@ export const VERDICTS = [
   ["bien", "Bien"],
   ["bof", "Bof"],
   ["plus_jamais", "Plus jamais"],
+  ["pas_realise", "Pas réalisé"],
 ];
 
 export const ETIQUETTES = [
