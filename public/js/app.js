@@ -2,7 +2,7 @@
 import { ETIQUETTES, libelleEtiquette, libelleVerdict, LONGUEUR_COMMENTAIRE, VERDICTS } from "./avis.js";
 import { rendreMarkdown } from "./markdown.js";
 import { appareilsConnus, chercher, CRITERES_VIDES } from "./recherche.js";
-import { alertesRecette, articlesAConsommer, evaluerPeriode, indexRecettes, macrosParJour, pire, repasAvantEcheance, resteVeille, usageStocks } from "./regles.js";
+import { alertesRecette, articlesAConsommer, evaluerPeriode, indexRecettes, macrosParJour, pire, repasAvantEcheance, resteVeille, revuePeriode, usageStocks } from "./regles.js";
 import { arrondi, couleurPastille, dateLocale, esc, isoDuJour, LIBELLE_MOMENT, LIBELLE_TYPE, motifPastille, normaliser, repartirCourses } from "./outils.js";
 
 const $ = (sel, racine = document) => racine.querySelector(sel);
@@ -602,8 +602,9 @@ function vueChoisir() {
       <h2>Un mot pour la préparation ?</h2>
       <label class="champ"><span>Commentaire pour toute la période</span>
         <textarea data-action="commentaire-general" rows="3" maxlength="2000" ${ouvert ? "" : "disabled"} placeholder="Ex. : samedi soir on est invités, pas de poisson cette fois…">${esc(etat.choix.commentaire_general)}</textarea></label>
-      ${ouvert ? `<button type="button" class="bouton" data-action="statut" data-statut="${etat.choix.statut === "termine" ? "brouillon" : "termine"}">
-        ${etat.choix.statut === "termine" ? "Rouvrir nos choix" : "On a fini de choisir"}</button>` : ""}
+      ${ouvert ? (etat.choix.statut === "termine"
+        ? `<button type="button" class="bouton" data-action="statut" data-statut="brouillon">Rouvrir nos choix</button>`
+        : `<button type="button" class="bouton" data-action="revue">On a fini de choisir</button>`) : ""}
       <p class="discret">${etat.choix.statut === "termine" ? "Choix marqués comme terminés. " : ""}${etat.choix.mis_a_jour ? `Dernier enregistrement ${esc(dateLongue(etat.choix.mis_a_jour))}.` : "Rien d'enregistré pour l'instant."}</p>
     </section>`;
 }
@@ -712,6 +713,65 @@ async function enregistrerRepas(repasId, modif) {
     toast(`Non enregistré : ${e.message}`, "interdit");
   }
   rafraichir();
+}
+
+// ---------- Revue finale avant « On a fini de choisir » ----------
+const pluriel = (n, un, plusieurs) => `${n} ${n > 1 ? plusieurs : un}`;
+
+function ouvrirRevue() {
+  const p = periodeAVenir();
+  const r = revuePeriode({
+    foyer: etat.donnees.foyer, preferences: etat.donnees.preferences, periode: p, plats: platsAVenir(), index: etat.index,
+    articles: articles(), aConsommer: aConsommer(),
+    couverts: new Set(aConsommer().filter(({ a, u }) => couverture(a, u.avant).length).map(({ a }) => a.id)),
+  });
+  const quand = (id) => {
+    const rep = p.repas.find((x) => x.id === id);
+    return `${jourDe(p, rep.jour).label.split(" ").slice(0, 2).join(" ")} ${rep.moment}`;
+  };
+  const ligne = (niveau, titre, detail) => `<li class="niv-${niveau}">${symbole(niveau)}<b>${esc(titre)}</b>${detail ? ` <span class="revue-detail">${esc(detail)}</span>` : ""}</li>`;
+
+  const s = r.stocks;
+  const sansPlat = s.urgents.map(({ a, u }) => ligne(u.niveau === "urgent" ? "interdit" : "attention", a.nom, `${echeance(u)} (${u.raison}), rien au menu pour le finir`));
+  const stocks = `<section class="revue-bloc" aria-labelledby="rv-stocks"><h3 id="rv-stocks">Le frigo et les stocks</h3>
+    ${sansPlat.length ? `<ul class="alertes">${sansPlat.join("")}</ul>` : `<p class="respectes">Aucun produit pressé ne reste sans plat.</p>`}
+    ${s.aFinir.length ? `<details><summary>${pluriel(s.aFinir.length, "autre produit à finir", "autres produits à finir")}, sans plat au menu</summary>
+      <ul class="revue-utilises">${s.aFinir.map((a) => `<li><b>${esc(a.nom)}</b></li>`).join("")}</ul></details>` : ""}
+    ${s.utilises.length ? `<details><summary>${pluriel(s.utilises.length, "produit utilisé", "produits utilisés")} par les plats au menu</summary>
+      <ul class="revue-utilises">${s.utilises.map(({ a, repas }) => `<li><b>${esc(a.nom)}</b> <span class="discret">${repas.map((id) => esc(quand(id))).join(", ")}</span></li>`).join("")}</ul></details>` : ""}
+  </section>`;
+
+  const enfreints = r.regles.find((x) => x.repas?.length);
+  const regles = `<section class="revue-bloc" aria-labelledby="rv-regles"><h3 id="rv-regles">Les règles de la famille</h3>
+    <ul class="alertes">${r.regles.map((x) => ligne(x.niveau, x.libelle, x.detail)).join("")}</ul>
+    ${enfreints ? `<ul class="revue-utilises">${enfreints.repas.map((x) => `<li><b>${esc(quand(x.repas))}</b> <span class="discret">${esc(x.texte)}</span></li>`).join("")}</ul>` : ""}
+  </section>`;
+
+  const i = r.impact;
+  const proteines = i.personnes.filter((x) => x.jours).map((x) => {
+    const detail = `${x.moyenne} g de protéines par jour en moyenne${x.cible ? ` (cible ${x.cible[0]} à ${x.cible[1]})` : ""}` +
+      `${x.trop ? ` · ${pluriel(x.trop, "jour au-dessus", "jours au-dessus")} du plafond` : ""}${x.leger ? ` · ${pluriel(x.leger, "jour sous", "jours sous")} la cible` : ""}`;
+    const partiel = x.incomplets ? ` · menu incomplet (${pluriel(x.incomplets, "jour", "jours")} avec un repas sans plat ou sans chiffres)` : "";
+    return ligne(x.leger + x.trop ? "attention" : x.incomplets ? "info" : "ok", x.nom, detail + partiel);
+  });
+  const impact = `<section class="revue-bloc" aria-labelledby="rv-impact"><h3 id="rv-impact">Ce que ces choix changent</h3>
+    <ul class="alertes">${proteines.join("")}
+      ${ligne("info", pluriel(i.plats, "plat différent", "plats différents"), `${pluriel(i.nouvelles, "jamais cuisiné", "jamais cuisinés")}${i.restes ? `, ${pluriel(i.restes, "repas en reste", "repas en restes")}` : ""}`)}</ul>
+  </section>`;
+
+  const aSurveiller = s.urgents.length + r.regles.filter((x) => x.niveau !== "ok").length + i.personnes.filter((x) => x.leger + x.trop).length;
+  const resume = `<p class="revue-resume ${aSurveiller ? "niv-attention" : "niv-ok"}"><b>${pluriel(i.repasChoisis, "repas choisi", "repas choisis")} sur ${i.repasTotal}</b>
+    · ${aSurveiller ? `${pluriel(aSurveiller, "point à surveiller", "points à surveiller")}, détails ci-dessous` : "tout est dans les repères"}</p>`;
+
+  $("#revue-corps").innerHTML = `<div class="fenetre-tete"><h2 id="revue-titre">Dernier coup d'œil</h2>
+      <button type="button" class="fermer" data-action="fermer" aria-label="Fermer">${icone("fermer")}</button></div>
+    ${r.manque ? `<p class="bandeau niv-attention">${pluriel(r.manque, "repas n'a", "repas n'ont")} pas encore de plat choisi.</p>` : ""}
+    ${resume}${stocks}${regles}${impact}
+    <div class="repas-actions revue-actions">
+      <button type="button" class="bouton secondaire" data-action="fermer">Retourner modifier</button>
+      <button type="button" class="bouton" data-action="valider-choix">Valider ce menu</button>
+    </div>`;
+  $("#revue").showModal();
 }
 
 async function enregistrerPeriode(modif) {
@@ -1459,6 +1519,11 @@ document.addEventListener("click", (ev) => {
   else if (action === "eveil") basculerEveil(el);
   else if (action === "recharger") location.reload();
   else if (action === "fermer") el.closest("dialog").close();
+  else if (action === "revue") ouvrirRevue();
+  else if (action === "valider-choix") {
+    $("#revue").close();
+    enregistrerPeriode({ statut: "termine" });
+  }
   else if (action === "jour") changerJour(Number(el.dataset.pas));
   else if (action === "cote-bascule") {
     etat.coteOuvert = !etat.coteOuvert;

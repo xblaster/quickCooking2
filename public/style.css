@@ -766,3 +766,12 @@ body:not(.avec-dock) .toast { bottom: calc(74px + env(safe-area-inset-bottom)); 
 .confirmer-corps h2 { margin: 0 0 8px; font-size: 1.3rem; }
 .confirmer-corps p { margin: 0; color: var(--discret); }
 .confirmer-corps .repas-actions { justify-content: flex-end; }
+
+/* Revue finale avant validation */
+.fenetre.revue { width: min(640px, calc(100vw - 24px)); }
+.revue-bloc { margin-top: 20px; }
+.revue-bloc h3 { margin: 0 0 6px; font-size: 1.15rem; }
+.revue-detail { font-weight: 400; }
+.revue-utilises { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 4px; font-size: .92rem; }
+.revue-actions { margin-top: 24px; justify-content: flex-end; position: sticky; bottom: 0; background: var(--surface); padding: 12px 0; border-top: 1px solid var(--filet-fort); }
+.revue-resume { margin: 12px 0 0; padding: .6rem .8rem; border-radius: 8px; font-size: 1rem; }

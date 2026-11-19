@@ -251,3 +251,60 @@ test("repartirCourses : rien de rangé, partiel, décoché, coché après appui,
   const r6 = repartirCourses(coursesTest, ["v2", "a1", "a4"], ["v2", "a1", "a4"]);
   assert.deepEqual(r6.deja_cochees.map((x) => x.id), ["v2", "a1", "a4"]);
 });
+
+test("revue : règle du poisson, stocks sans plat et protéines", async () => {
+  const { revuePeriode } = await import("../public/js/regles.js");
+  const periode = {
+    jours: [{ id: "lun", label: "Lundi", date: "2026-10-12", semaine: "S1" }],
+    repas: [{ id: "lun-m", jour: "lun", moment: "midi", convives: { J: "m" } }, { id: "lun-s", jour: "lun", moment: "soir", convives: { J: "m" } }],
+  };
+  const index = indexRecettes([R("sau", { type: "poisson" }, { ingredients: [{ item: "saumon" }] }), R("pois", { type: "vege" })]);
+  const articles = [{ id: "a", nom: "Saumon", mots: ["saumon"], prioritaire: true }, { id: "b", nom: "Crème", mots: ["creme"], prioritaire: true }];
+  const rv = revuePeriode({ foyer, preferences, periode, plats: { "lun-m": { ref: "sau", portion: 1 } }, index, articles, aConsommer: [], couverts: new Set() });
+  assert.equal(rv.stocks.utilises.length, 1);
+  assert.deepEqual(rv.stocks.aFinir.map((a) => a.id), ["b"]);
+  assert.equal(rv.regles.find((x) => x.id === "poisson-S1").niveau, "ok");
+  assert.equal(rv.regles.find((x) => x.id === "poisson-gras").niveau, "info");
+  assert.equal(rv.manque, 1);
+  assert.equal(rv.impact.personnes.find((x) => x.code === "J").jours, 1);
+});
+
+test("revue : produit pressé couvert ou non, double viande, plat interdit, sans objectif poisson", async () => {
+  const { revuePeriode, articlesAConsommer } = await import("../public/js/regles.js");
+  const periode = {
+    jours: [{ id: "lun", label: "Lundi", date: "2026-10-12", semaine: "S1" }],
+    repas: [{ id: "lun-m", jour: "lun", moment: "midi", convives: { J: "m" } }, { id: "lun-s", jour: "lun", moment: "soir", convives: { J: "m" } }],
+  };
+  const index = indexRecettes([
+    R("steak", { type: "viande" }), R("sau", { type: "poisson" }), R("veau", { type: "viande" }, { nom: "Blanquette de veau" }),
+  ]);
+  const articles = [{ id: "a", nom: "Crème", mots: ["creme"], dlc: "2026-10-13" }];
+  const pressé = articlesAConsommer(articles, "2026-10-12");
+  const base = { foyer, periode, index, articles, aConsommer: pressé };
+
+  // produit pressé sans plat, non couvert : signalé ; couvert ailleurs : non signalé
+  const a = revuePeriode({ ...base, preferences, plats: {}, couverts: new Set() });
+  assert.equal(a.stocks.urgents.length, 1);
+  assert.equal(revuePeriode({ ...base, preferences, plats: {}, couverts: new Set(["a"]) }).stocks.urgents.length, 0);
+
+  // viande midi et poisson soir : attention
+  const b = revuePeriode({ ...base, preferences, plats: { "lun-m": { ref: "steak" }, "lun-s": { ref: "sau" } }, couverts: new Set() });
+  assert.equal(b.regles.find((x) => x.id === "un-carne").niveau, "attention");
+
+  // mot interdit : règle « Aucun plat interdit » en interdit avec le repas fautif
+  const c = revuePeriode({ ...base, preferences, plats: { "lun-s": { ref: "veau" } }, couverts: new Set() });
+  const interdit = c.regles.find((x) => x.id === "interdits");
+  assert.equal(interdit.niveau, "interdit");
+  assert.equal(interdit.repas[0].repas, "lun-s");
+
+  // sans objectif de poisson : aucune ligne de poisson
+  const d = revuePeriode({ ...base, preferences: { ...preferences, poisson_par_semaine: undefined }, plats: {}, couverts: new Set() });
+  assert.equal(d.regles.some((x) => x.id.startsWith("poisson")), false);
+});
+
+test("revue : menu incomplet signalé dans l'impact des protéines", async () => {
+  const { revuePeriode } = await import("../public/js/regles.js");
+  const periode = { jours: [{ id: "lun", label: "Lundi", date: "2026-10-12", semaine: "S1" }], repas: [{ id: "lun-m", jour: "lun", moment: "midi", convives: { J: "m" } }] };
+  const rv = revuePeriode({ foyer, preferences, periode, plats: {}, index: indexRecettes([]), articles: [], aConsommer: [], couverts: new Set() });
+  assert.equal(rv.impact.personnes.find((x) => x.code === "J").incomplets, 1);
+});

@@ -134,7 +134,13 @@ export function evaluerPeriode({ foyer, preferences, periode, plats, index }) {
     }
   }
 
-  return { parRepas, parJour: macrosParJour({ foyer, periode, plats, index }), bilan: bilanPeriode({ preferences, periode, plats, index, joursDoubleCarne }) };
+  return {
+    parRepas,
+    parJour: macrosParJour({ foyer, periode, plats, index }),
+    bilan: bilanPeriode({ preferences, periode, plats, index, joursDoubleCarne }),
+    joursDoubleCarne,
+    poisson: poissonParSemaine({ preferences, periode, plats, index }),
+  };
 }
 
 export const MACROS = ["kcal", "prot", "gluc", "lip", "fibres"];
@@ -204,6 +210,26 @@ export function usageStocks(articles, { periode, plats, index }) {
   return usage;
 }
 
+/**
+ * Règle du poisson : par semaine, nombre de poissons choisis (plus ceux déjà servis) et cible ;
+ * `gras` = au moins un poisson gras sur la période. null si la famille n'a pas d'objectif.
+ */
+export function poissonParSemaine({ preferences, periode, plats, index }) {
+  const objectif = preferences?.poisson_par_semaine;
+  if (!objectif) return null;
+  const recettes = periode.repas.map((r) => ({ rep: r, r: index.get(plats[r.id]?.ref) })).filter((x) => x.r);
+  const jours = new Map(periode.jours.map((j) => [j.id, j]));
+  const semaines = new Map();
+  for (const j of periode.jours) semaines.set(j.semaine, (semaines.get(j.semaine) || 0) + 1);
+  const liste = [];
+  for (const [semaine, nbJours] of semaines) {
+    const n = recettes.filter((x) => x.r.drapeaux?.type === "poisson" && jours.get(x.rep.jour)?.semaine === semaine).length + (periode.poissons_deja?.[semaine] || 0);
+    const cible = nbJours >= 5 ? objectif : Math.max(1, Math.round((objectif * nbJours) / 7));
+    liste.push({ semaine, n, cible });
+  }
+  return { semaines: liste, gras: recettes.some((x) => x.r.drapeaux?.poisson_gras) };
+}
+
 function bilanPeriode({ preferences, periode, plats, index, joursDoubleCarne }) {
   const out = [];
   const recettes = periode.repas.map((r) => ({ rep: r, r: index.get(plats[r.id]?.ref) })).filter((x) => x.r);
@@ -214,18 +240,10 @@ function bilanPeriode({ preferences, periode, plats, index, joursDoubleCarne }) 
     out.push({ niveau: n > lim.max ? "attention" : "ok", texte: `${lim.libelle} : ${n} (repère ≤ ${lim.max})` });
   }
 
-  const objectif = preferences?.poisson_par_semaine;
-  if (objectif) {
-    const jours = new Map(periode.jours.map((j) => [j.id, j]));
-    const semaines = new Map();
-    for (const j of periode.jours) semaines.set(j.semaine, (semaines.get(j.semaine) || 0) + 1);
-    for (const [s, nbJours] of semaines) {
-      const n = recettes.filter((x) => x.r.drapeaux?.type === "poisson" && jours.get(x.rep.jour)?.semaine === s).length + (periode.poissons_deja?.[s] || 0);
-      const cible = nbJours >= 5 ? objectif : Math.max(1, Math.round((objectif * nbJours) / 7));
-      out.push({ niveau: n >= cible ? "ok" : "info", texte: `Poisson ${s} : ${n} / ${cible}` });
-    }
-    if (recettes.length && !recettes.some((x) => x.r.drapeaux?.poisson_gras))
-      out.push({ niveau: "info", texte: "Aucun poisson gras sur la période" });
+  const poisson = poissonParSemaine({ preferences, periode, plats, index });
+  if (poisson) {
+    for (const s of poisson.semaines) out.push({ niveau: s.n >= s.cible ? "ok" : "info", texte: `Poisson ${s.semaine} : ${s.n} / ${s.cible}` });
+    if (recettes.length && !poisson.gras) out.push({ niveau: "info", texte: "Aucun poisson gras sur la période" });
   }
   if (joursDoubleCarne.length) out.push({ niveau: "attention", texte: `Viande ou poisson midi et soir : ${joursDoubleCarne.join(", ")}` });
   const nouvelles = distinctes((r) => !r.historique?.deja_cuisinee).size;
@@ -282,4 +300,68 @@ export function repasAvantEcheance(article, avant, { periode, plats, index }) {
   return periode.repas
     .filter((rep) => (!dates.get(rep.jour) || dates.get(rep.jour) <= avant) && utiliseStock(index.get(plats[rep.id]?.ref), article))
     .map((rep) => rep.id);
+}
+
+// ---------- Revue finale avant validation ----------
+/**
+ * Synthèse montrée avant « On a fini de choisir » : stocks employés ou oubliés, règles respectées ou non,
+ * effet des choix sur les protéines et la variété. Fonction pure.
+ * articles : stocks de l'export ; aConsommer : [{ a, u }] (articlesAConsommer) ; couverts : ids d'articles
+ * déjà consommés par un repas (période courante comprise) avant leur échéance.
+ */
+export function revuePeriode({ foyer, preferences, periode, plats, index, articles, aConsommer, couverts }) {
+  const ev = evaluerPeriode({ foyer, preferences, periode, plats, index });
+  const usage = usageStocks(articles, { periode, plats, index });
+  const choisis = periode.repas.filter((r) => plats[r.id]?.ref || r.impose);
+
+  const urgents = (aConsommer || []).filter(({ a }) => !usage[a.id].length && !(couverts || new Set()).has(a.id));
+  const urgentIds = new Set((aConsommer || []).map(({ a }) => a.id));
+  const aFinir = (articles || []).filter((a) => a.prioritaire && !urgentIds.has(a.id) && !usage[a.id].length);
+  const utilises = (articles || []).filter((a) => usage[a.id].length).map((a) => ({ a, repas: usage[a.id] }));
+
+  const regles = [];
+  const nbCarne = ev.joursDoubleCarne.length;
+  regles.push({ id: "un-carne", niveau: nbCarne ? "attention" : "ok", libelle: "Un seul repas viande ou poisson par jour",
+    detail: nbCarne ? `Midi et soir : ${ev.joursDoubleCarne.join(", ")}` : "Respecté" });
+  if (ev.poisson) {
+    for (const s of ev.poisson.semaines)
+    {
+      const debut = periode.jours.find((j) => j.semaine === s.semaine && j.date);
+      const quand = debut ? `semaine du ${dateLocale(debut.date).toLocaleDateString("fr-FR", { day: "numeric", month: "long" })}` : s.semaine;
+      regles.push({ id: `poisson-${s.semaine}`, niveau: s.n >= s.cible ? "ok" : "info", libelle: `Poisson, ${quand}`,
+        detail: `${s.n} au menu sur ${s.cible}${s.n >= s.cible ? "" : ` : il en manque ${s.cible - s.n}`}` });
+    }
+    regles.push({ id: "poisson-gras", niveau: ev.poisson.gras ? "ok" : "info", libelle: "Un poisson gras sur la période",
+      detail: ev.poisson.gras ? "Au moins un" : "Pas de poisson gras au menu" });
+  }
+  for (const a of ev.bilan.filter((x) => /\(repère ≤/.test(x.texte)))
+    regles.push({ id: a.texte, niveau: a.niveau, libelle: a.texte.split(" : ")[0], detail: a.texte.split(" : ")[1].replace(/\(repère ≤ (\d+)\)/, "(au plus $1)") });
+  const enfreintes = [];
+  for (const rep of periode.repas) for (const a of ev.parRepas[rep.id] || []) if (a.niveau === "interdit") enfreintes.push({ repas: rep.id, texte: a.texte });
+  regles.push({ id: "interdits", niveau: enfreintes.length ? "interdit" : "ok", libelle: "Aucun plat interdit",
+    detail: enfreintes.length ? `${enfreintes.length} repas à revoir` : "Respecté", repas: enfreintes });
+
+  // Impact sur les protéines : jours hors repères par personne
+  const personnes = foyer.personnes.map((p) => {
+    let leger = 0, trop = 0, jours = 0, prot = 0, incomplets = 0;
+    for (const j of periode.jours) {
+      const d = ev.parJour[j.id]?.[p.code];
+      if (!d || d.etat === "absent") continue;
+      jours++;
+      prot += d.total;
+      if (d.incomplet) incomplets++;
+      if (d.etat === "leger") leger++;
+      else if (d.etat === "trop") trop++;
+    }
+    return { code: p.code, nom: p.nom, jours, leger, trop, incomplets, moyenne: jours ? Math.round(prot / jours) : 0, cible: p.proteines_cible };
+  });
+  const refs = new Set(choisis.map((r) => plats[r.id]?.ref ?? r.impose?.ref).filter(Boolean));
+  const nouvelles = [...refs].filter((ref) => index.get(ref) && !index.get(ref).historique?.deja_cuisinee).length;
+  const restes = periode.repas.filter((r) => ev.parRepas[r.id]?.some((a) => /^Reste de /.test(a.texte))).length;
+  return {
+    stocks: { urgents, aFinir, utilises },
+    regles,
+    impact: { personnes, repasChoisis: choisis.length, repasTotal: periode.repas.length, plats: refs.size, nouvelles, restes },
+    manque: periode.repas.length - choisis.length,
+  };
 }

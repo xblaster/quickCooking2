@@ -9,7 +9,9 @@ Site familial (`https://quick-cooking.lo2k.net`) pour :
 - **choisir la période à venir** : pour chaque repas, 1 à 5 propositions du projet « batch cooking »,
   ou un remplacement cherché dans toute la base de recettes (filtres type, temps, appareil,
   protéines, saison, froid, jamais cuisinée, coups de cœur), portion et remarque ; contrôles
-  d'équilibre en direct ; bouton « On a fini de choisir ».
+  d'équilibre en direct ; bouton « On a fini de choisir », qui ouvre une **revue avant validation**
+  (produits du frigo sans plat, règles de la famille dont le poisson, effet des choix sur les protéines
+  et la variété) : purement informative, on valide ensuite ou on retourne modifier.
 
 L'accueil affiche le **prochain repas** en grand (moment, numéro, plat, qui mange où, bouton vers la
 recette), puis les repas suivants ; il signale un menu terminé. La fiche recette s'ouvre en **mode
