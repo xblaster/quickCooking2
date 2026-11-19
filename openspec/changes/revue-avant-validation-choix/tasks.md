@@ -17,5 +17,5 @@
 ## 3. Livraison
 
 - [x] 3.1 Construire l'image au tag daté `AAAAMMJJ-<sha7>`, la pousser, mettre à jour le tag dans `deploy/k8s/` ; vérifier que `kubectl apply --dry-run=server -f deploy/k8s/` passe
-- [ ] 3.2 Déploiement réel sur le cluster (`quick-cooking`) : tâche distincte, à valider par un humain ; vérifier rollout OK, `/` 200, `/healthz` 200, données du PVC intactes
-- [ ] 3.3 Consigner la version dans `namespaces/quick-cooking/README.md` (section Stack et Journal) du dépôt d'infrastructure
+- [x] 3.2 Déploiement réel sur le cluster (`quick-cooking`) : tâche distincte, à valider par un humain ; vérifier rollout OK, `/` 200, `/healthz` 200, données du PVC intactes
+- [x] 3.3 Consigner la version dans `namespaces/quick-cooking/README.md` (section Stack et Journal) du dépôt d'infrastructure
