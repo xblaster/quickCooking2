@@ -27,13 +27,13 @@
 
 ## 5. IaC et runbook (`lo2k_infrastructure/namespaces/quick-cooking/`)
 
-- [ ] 5.1 Reporter les mêmes manifestes dans `iac/` (Deployment, NetworkPolicy, Ingress machine, Ingress annoté) ; vérifier par `kubectl apply --dry-run=server` et `kubectl diff` limité aux différences attendues
-- [ ] 5.2 Répétition fantôme `scripts/auth/proteger.py fantome quick-cooking quick-cooking-ingress quick-cooking` (sans bascule) ; vérifier « OK »
-- [ ] 5.3 Mettre à jour `namespaces/quick-cooking/README.md` (identité par `auth`, NetworkPolicy, exemption, procédure de déploiement et de retour arrière, journal) ; vérifier les liens
+- [x] 5.1 Reporter les mêmes manifestes dans `iac/` (Deployment, NetworkPolicy, Ingress machine, Ingress annoté) ; vérifier par `kubectl apply --dry-run=server` et `kubectl diff` limité aux différences attendues
+- [x] 5.2 Répétition fantôme `scripts/auth/proteger.py fantome quick-cooking quick-cooking-ingress quick-cooking` (sans bascule) ; vérifier « OK »
+- [x] 5.3 Mettre à jour `namespaces/quick-cooking/README.md` (identité par `auth`, NetworkPolicy, exemption, procédure de déploiement et de retour arrière, journal) ; vérifier les liens
 
 ## 6. Image
 
-- [ ] 6.1 Construire et pousser `xblaster/quick-cooking:AAAAMMJJ-<sha7>` (linux/amd64, jamais `latest`) ; vérifier le digest par `docker buildx imagetools inspect` et un démarrage local du conteneur (`/healthz` 200, `/api/donnees` 401 sans en-tête, 200 avec)
+- [x] 6.1 Construire et pousser `xblaster/quick-cooking:AAAAMMJJ-<sha7>` (linux/amd64, jamais `latest`) ; vérifier le digest par `docker buildx imagetools inspect` et un démarrage local du conteneur (`/healthz` 200, `/api/donnees` 401 sans en-tête, 200 avec)
 
 ## 7. Déploiement (validation humaine, ne pas exécuter sans accord de Jérôme)
 
