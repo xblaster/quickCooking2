@@ -1,0 +1,35 @@
+# Exemption de la décision d'auth.lo2k.net pour les routes machine (batch cooking, jeton IMPORT_TOKEN) :
+# /api/export (exact) et /api/export/ (préfixe). nginx retient le chemin le plus précis : tout le reste de l'hôte
+# reste protégé par quick-cooking-ingress. Le serveur ne lit JAMAIS X-Auth-* sur ces routes (forgeables ici).
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: quick-cooking-machine
+  namespace: quick-cooking
+  labels:
+    app.kubernetes.io/name: quick-cooking
+    app.kubernetes.io/part-of: quick-cooking-platform
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/proxy-body-size: 50m
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: quick-cooking.lo2k.net
+      http:
+        paths:
+          - path: /api/export
+            pathType: Exact
+            backend:
+              service:
+                name: quick-cooking-service
+                port:
+                  number: 80
+          - path: /api/export/
+            pathType: Prefix
+            backend:
+              service:
+                name: quick-cooking-service
+                port:
+                  number: 80

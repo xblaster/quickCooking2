@@ -12,6 +12,13 @@ metadata:
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
     nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
     nginx.ingress.kubernetes.io/proxy-body-size: 50m
+    # Protection auth.lo2k.net (change adopter-auth-lo2k) : posée par scripts/auth/proteger.py de lo2k_infrastructure.
+    # /api/export est exempté par quick-cooking-machine (ingress-machine.yaml).
+    nginx.ingress.kubernetes.io/auth-url: "http://auth-svc.auth.svc.cluster.local/verifier?site=quick-cooking"
+    nginx.ingress.kubernetes.io/auth-signin: "https://auth.lo2k.net/connexion?rd=https://$host$escaped_request_uri"
+    nginx.ingress.kubernetes.io/auth-response-headers: "X-Auth-Personne,X-Auth-Appareil,X-Auth-Admin"
+    nginx.ingress.kubernetes.io/auth-cache-key: "$cookie_lo2k_auth$host"
+    nginx.ingress.kubernetes.io/auth-cache-duration: "200 30s"
 spec:
   ingressClassName: nginx
   rules:

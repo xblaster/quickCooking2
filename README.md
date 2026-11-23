@@ -43,9 +43,9 @@ Variables d'environnement :
 | `DATA_DIR` | `./data` | export déposé (`export.json`) et choix (`choix/<periode>.json`) |
 | `IMPORT_TOKEN` | vide = administration désactivée | jeton d'administration : dépôt de l'export, autorisation des appareils |
 | `APPAREILS_MODE` | `libre` | `libre` : tout appareil utilise le site (il est seulement enregistré) ; `autorises` : seuls les appareils autorisés |
-| `RP_ID` | `quick-cooking.lo2k.net` | domaine des passkeys (`localhost` en local) |
-| `RP_ORIGIN` | `https://<RP_ID>` | origine exacte vue par le navigateur (`http://localhost:3000` en local) ; en `http://localhost` le cookie de session n'est pas `Secure` |
-| `ADMINS` | `J` | codes des personnes dont les passkeys administrent (liste séparée par des virgules) |
+| `SITE_ORIGIN` | `https://quick-cooking.lo2k.net` | origine du site : une écriture portant un autre `Origin` est refusée (403) |
+
+L'identité des personnes ne se configure pas ici : elle vient d'`auth.lo2k.net` (voir « Identité et avis sur les plats »).
 
 Sans export déposé, le site sert [`exemple/export.json`](exemple/export.json), régénérable depuis le
 dépôt « batch cooking » :
@@ -61,7 +61,6 @@ python outils/construire_exemple.py
 | `server.mjs` | serveur HTTP (statique + API), sans dépendance |
 | `lib/contrat.mjs` | validation de l'export, normalisation et validation des choix |
 | `lib/stockage.mjs` | fichiers de `DATA_DIR`, écritures atomiques, file d'attente par période |
-| `lib/passkeys.mjs` | passkeys (vérification WebAuthn avec `node:crypto`), codes d'invitation, sessions |
 | `public/` | page unique : `js/app.js` (vues), `js/regles.js` (contrôles), `js/recherche.js`, `js/markdown.js`, `js/avis.js` (verdicts et étiquettes) |
 | `exemple/export.json` | données d'exemple : 196 fiches réelles, période S40-S41, période à venir fictive |
 | `outils/construire_exemple.py` | implémentation de référence de l'export, à reprendre côté « batch cooking » |
@@ -76,7 +75,7 @@ Tout est stocké en JSON dans `DATA_DIR`, monté sur le PVC `quick-cooking-data`
 | `choix/<periode>.json` | choix de la famille pour la période à venir |
 | `courses/<periode>.json` | cases cochées de la liste de courses, partagées entre appareils |
 | `appareils.json` | appareils connus : empreinte de la clé, nom, navigateur, statut, dates |
-| `passkeys.json` | passkeys (clé publique, personne, nom d'appareil, dates, révocation), empreintes des codes d'invitation et des sessions |
+| `passkeys.json` | **plus utilisé** (ancien registre des passkeys locales, remplacé par `auth.lo2k.net`) ; à supprimer après la période de retour arrière |
 | `avis/<periode>.json` | avis de la famille sur les plats de la période courante |
 
 Écritures atomiques et en file d'attente par fichier ; un seul pod (`replicas: 1`, `Recreate`).
@@ -99,45 +98,42 @@ curl -X PUT -H "Authorization: Bearer $IMPORT_TOKEN" -H "Content-Type: applicati
 
 Un appareil non autorisé voit alors un écran « Appareil en attente » où il peut se nommer.
 
-## Passkeys et avis sur les plats
+## Identité et avis sur les plats
 
-Le site se lit sans compte. Pour **donner un avis** sur un plat de la semaine (verdict, étiquettes,
-commentaire), il faut être connecté par **passkey** : empreinte, visage ou code du téléphone. Chaque
-passkey est liée à une personne du foyer (« Qui je suis ») ; le serveur ne garde que sa clé publique.
-Une fois connecté, « Je suis » prend cette identité pour les avis, les cases de courses et les choix.
+Le site est protégé par **`auth.lo2k.net`** (service commun des sites `*.lo2k.net`, voir le dépôt
+`lo2k_infrastructure`, change `auth-lo2k-passkeys`) : une passkey par appareil, des droits par site, une page
+d'administration. ingress-nginx demande à `auth` si la personne a le droit d'ouvrir `quick-cooking`, puis
+transmet son identité au serveur dans trois en-têtes :
 
-Créer une passkey demande un **code d'invitation** (8 caractères, usage unique, 24 h). Les passkeys de
-Jérôme (`ADMINS`) ouvrent la section « Administration » de la page « Mon identité » (`#/moi`) : créer
-un code, lister les passkeys, en révoquer une (ses sessions tombent aussitôt ; elle reste listée).
+| En-tête | Contenu |
+|---|---|
+| `X-Auth-Personne` | code de la personne (`J`, `P`, `G`…) |
+| `X-Auth-Appareil` | identifiant de l'appareil (passkey) |
+| `X-Auth-Admin` | `1` pour un administrateur |
 
-Amorçage (première passkey) ou secours si plus aucune passkey d'administration n'est active :
+Le serveur ne garde ni passkey, ni code d'invitation, ni session, et n'émet aucun cookie :
 
-```bash
-curl -X POST -H "Authorization: Bearer $IMPORT_TOKEN" -H "Content-Type: application/json" -d '{}' \
-  https://quick-cooking.lo2k.net/api/invitations
-# → { "code": "K7QM-2XPA", "expire": "…" } : à saisir dans « Mon identité » sur le téléphone de Jérôme
-```
+- **Sans en-tête valide, toute l'API du site répond 401.** Les pages statiques et `/healthz` restent
+  servis (c'est l'Ingress qui protège les pages).
+- Les avis (`PUT`/`DELETE /api/avis/…`) et les cases de courses portent **la personne de l'identité**, jamais
+  celle du corps de la requête. « Je suis » (en-tête du site) affiche cette personne.
+- La page « Mon identité » (`#/moi`) montre la personne, le nom de l'appareil, et renvoie vers
+  `auth.lo2k.net` (appareils, déconnexion, et administration pour un administrateur).
+- Toute écriture exige un corps JSON et, si `Origin` est présent, l'origine du site (`SITE_ORIGIN`).
+- **Les en-têtes ne sont fiables que parce que la NetworkPolicy du namespace n'admet que ingress-nginx**
+  ([`deploy/k8s/networkpolicy.yaml`](deploy/k8s/networkpolicy.yaml)). Ne jamais exposer le Service autrement.
 
-À savoir :
+### Routes machine (batch cooking)
 
-- Une passkey **synchronisée** (trousseau iCloud, gestionnaire Google) est la même sur tous les appareils
-  du compte : la révoquer la coupe partout.
-- Une passkey créée sur `localhost` ne marche pas en production (autre `RP_ID`), et inversement.
-- « batch cooking » relit les avis avec `GET /api/avis` (voir
-  [`docs/donnees-entree-batch-cooking.md`](docs/donnees-entree-batch-cooking.md) §5 bis).
-- Test en local : `RP_ID=localhost RP_ORIGIN=http://localhost:3000 IMPORT_TOKEN=x npm run dev`, puis
-  dans Chrome, DevTools ▸ WebAuthn ▸ authentificateur virtuel si l'ordinateur n'a pas de capteur.
+L'Ingress `quick-cooking-machine` exempte `/api/export` (exact) et `/api/export/` de la décision d'`auth` :
+ces routes n'acceptent que `Authorization: Bearer $IMPORT_TOKEN` et **ne lisent jamais les en-têtes
+d'identité** (un client pourrait les forger). Les lectures de batch cooking y vivent aussi :
+`GET /api/export/choix[/<période>]` et `GET /api/export/avis[/<période>]` (anciens `GET /api/choix` et
+`GET /api/avis`, désormais réservés au site). Voir
+[`docs/donnees-entree-batch-cooking.md`](docs/donnees-entree-batch-cooking.md).
 
-## Points ouverts avant la mise en ligne
+### Tester en local
 
-1. **Déploiement.** Les manifests sont prêts (`deploy/k8s/pvc.yaml`, `deployment.yaml` à 1 réplica)
-   mais rien n'est appliqué. Le PVC est en reclaim `Delete` : le prévenir pour les sauvegardes
-   (`backup-all.ps1` du dépôt d'infrastructure). Créer le secret `IMPORT_TOKEN` et décommenter
-   `envFrom`.
-2. **Envoi de l'export.** « batch cooking » doit produire l'export (reprendre
-   `outils/construire_exemple.py`) et le déposer avec `IMPORT_TOKEN`. Les options de la période à
-   venir de l'exemple sont tirées par un script, pas délibérées par le collège.
-3. **Qualité des macros.** Les chiffres viennent de `evaluer_nutrition.py` de « batch cooking ».
-   Quelques fiches sont aberrantes (Saint-Jacques aux légumes : 2 472 kcal par portion ; sandwich
-   sardine-courgette : 1 856 kcal) : le site les marque « chiffres douteux » et ne les compte pas.
-   Le risotto au jambon sort à 23 g de protéines contre ≈ 34 g attendus (`SPEC_App_Menus.md` §7.5).
+Les en-têtes sont posés par l'Ingress : en local, les envoyer à la main
+(`curl -H "X-Auth-Personne: J" -H "X-Auth-Admin: 1" http://localhost:3000/api/session`) ou placer devant le
+serveur un petit proxy qui les ajoute. Sans en-tête, le site affiche « Connexion requise ».

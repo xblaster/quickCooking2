@@ -19,7 +19,7 @@ rien, il **affiche**, **contrôle** et **recueille les choix** de la famille.
    `stocks`, `periode_courante`, `periode_a_venir`, `recettes`. Tu peux aussi n'envoyer qu'une section.
 2. **Période courante** = le menu décidé en cours (lecture seule pour la famille) + les courses.
    **Période à venir** = 1 à 5 propositions par repas (5 conseillées) ; la famille choisit ou remplace.
-3. Tu relis les **choix** de la famille (`GET /api/choix`) avant d'arrêter le menu de la période à venir
+3. Tu relis les **choix** de la famille (`GET /api/export/choix`) avant d'arrêter le menu de la période à venir
    (Temps 2 de ton skill).
 4. Les **stocks** portent les produits **à consommer absolument** (date limite proche, produit frais
    présent depuis longtemps) : c'est ce qui permet au site d'alerter quand aucun repas ne les utilise
@@ -52,6 +52,9 @@ recette absente, par exemple) est refusée sans rien écrire.
 
 Base : `https://quick-cooking.lo2k.net` (en local : `http://localhost:3000`).
 Authentification : en-tête `Authorization: Bearer <IMPORT_TOKEN>` sur toutes les routes ci-dessous.
+Ces routes sont toutes sous `/api/export` : c'est le seul préfixe exempté de la connexion `auth.lo2k.net`. Les routes du site
+(`/api/choix`, `/api/avis`, `/api/courses`…) exigent une personne connectée et **ne reconnaissent pas le jeton** ; les anciennes
+lectures `GET /api/choix` et `GET /api/avis` doivent devenir `GET /api/export/choix` et `GET /api/export/avis`.
 Le jeton est un secret : lis-le dans une variable d'environnement (`QUICK_COOKING_IMPORT_TOKEN`),
 ne l'écris jamais dans un fichier du dépôt.
 
@@ -61,11 +64,10 @@ ne l'écris jamais dans un fichier du dépôt.
 | PUT | `/api/export/<section>` | la section seule (`foyer`, `preferences`, `stocks`, `periode_courante`, `periode_a_venir`, `recettes`) | `200 { ok, avertissements }` ; `400 { erreur }` |
 | POST | `/api/export/verifier` | export complet — ou une section avec `?section=<nom>` | `200 { valide, erreurs[], avertissements[] }` — **n'écrit rien** |
 | GET | `/api/export/etat` | — | ce qui est en place : dates, nombre de recettes et d'articles, ids des périodes, avancement des choix, avertissements |
-| GET | `/api/choix` | — | choix de la famille pour la période à venir en place (§5) |
-| GET | `/api/choix/<id période>` | — | idem pour une période donnée |
-| GET | `/api/avis` | — | avis de la famille sur les plats de la période courante (§5 bis) |
-| GET | `/api/avis/<id période>` | — | idem pour une période passée, même sortie de l'export |
-| POST | `/api/invitations` | `{}` | code d'invitation pour créer une passkey (amorçage ; pas ton rôle sauf demande) |
+| GET | `/api/export/choix` | — | choix de la famille pour la période à venir en place (§5) |
+| GET | `/api/export/choix/<id période>` | — | idem pour une période donnée |
+| GET | `/api/export/avis` | — | avis de la famille sur les plats de la période courante (§5 bis) |
+| GET | `/api/export/avis/<id période>` | — | idem pour une période passée, même sortie de l'export |
 | GET | `/schema/export-v1.json` | — | schéma JSON (draft 2020-12) de l'export, sans authentification |
 | GET | `/api/appareils` · PUT `/api/appareils/<id>` | `{ "statut": "autorise" }` | administration des appareils de la famille (pas ton rôle sauf demande) |
 
@@ -84,7 +86,7 @@ curl -s -X PUT "$QC/api/export/stocks" -H "$H_AUTH" \
   -H "Content-Type: application/json" --data-binary @stocks.json
 
 # 3. Relire les choix de la famille
-curl -s "$QC/api/choix" -H "$H_AUTH" -o choix.json
+curl -s "$QC/api/export/choix" -H "$H_AUTH" -o choix.json
 ```
 
 Exemple (Python, bibliothèque standard) :
@@ -110,7 +112,7 @@ if not verif["valide"]:
     raise SystemExit(verif["erreurs"])
 print(verif["avertissements"])
 appel("PUT", "/api/export/stocks", stocks)
-choix = appel("GET", "/api/choix")
+choix = appel("GET", "/api/export/choix")
 ```
 
 Implémentation de référence de l'export complet (lit tes fiches, tes inventaires, tes profils) :
@@ -356,7 +358,7 @@ Envoie **toutes** les fiches de `01_Fiches_Recettes/` (hors `Catalogue`, `Index`
 
 ## 5. Relire les choix de la famille
 
-`GET /api/choix` renvoie :
+`GET /api/export/choix` renvoie :
 
 ```json
 {
@@ -399,8 +401,8 @@ Ensuite : Temps 2 de ton skill (fiche semaine, courses), puis envoi de la nouvel
 ## 5 bis. Relire les avis de la famille
 
 Pendant la période, Jérôme, Pauline et Grégoire notent les plats de `periode_courante` sur le site
-(connectés par passkey : la personne est certaine). **Avant de raffiner la période suivante**, relis-les :
-`GET /api/avis` (période courante) ou `GET /api/avis/<id période>` (une période passée : ses avis
+(connectés par `auth.lo2k.net` : la personne est certaine). **Avant de raffiner la période suivante**, relis-les :
+`GET /api/export/avis` (période courante) ou `GET /api/export/avis/<id période>` (une période passée : ses avis
 restent lisibles quand elle a quitté l'export, mais ne sont plus modifiables).
 
 ```json

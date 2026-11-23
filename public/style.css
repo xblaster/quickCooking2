@@ -646,16 +646,13 @@ body:not(.avec-dock) .toast { bottom: calc(74px + env(safe-area-inset-bottom)); 
   .cote { left: auto; right: 24px; width: 440px; border: 2px solid var(--filet-fort); border-bottom: 0; border-radius: 12px 12px 0 0; }
 }
 
-/* ---------- Identité : passkey dans l'en-tête ---------- */
-.moi-session, .moi-cle {
+/* ---------- Identité : personne connectée dans l'en-tête ---------- */
+.moi-session {
   display: inline-grid; place-items: center; min-width: 44px; height: 44px; padding: 0 .7rem; border-radius: 999px;
   font-weight: 800; text-decoration: none; border: 1.5px solid var(--quai-2); color: var(--quai-texte);
 }
 .moi-session { background: var(--quai-texte); color: var(--quai); border-color: var(--quai-texte); }
 .moi-session .nom-long { display: none; }
-.moi-cle { padding: 0; margin-left: 2px; }
-.moi-cle svg { width: 20px; height: 20px; }
-.moi-cle[aria-current="page"] { background: var(--quai-2); }
 @media (min-width: 1000px) {
   .moi-session .nom-court { display: none; }
   .moi-session .nom-long { display: inline; }
@@ -672,32 +669,11 @@ body:not(.avec-dock) .toast { bottom: calc(74px + env(safe-area-inset-bottom)); 
   border: 2px solid var(--filet-fort); font-weight: 800;
 }
 .identite-qui .initiale { width: 52px; height: 52px; font-size: 1.3rem; border-width: 2.5px; }
-.form-passkey { display: grid; gap: 14px; max-width: 440px; }
-.form-passkey .bouton { justify-self: start; }
 .champ select {
   width: 100%; min-height: 48px; border: 1.5px solid var(--filet); border-radius: 10px; padding: .6rem .75rem; background: var(--surface); color: var(--texte);
 }
 .champ select:focus { border-color: var(--filet-fort); }
-.form-passkey input[name="code"] { font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
 .form-erreur { margin: 0; border-radius: 8px; padding: .6rem .8rem; font-size: .95rem; }
-.code-invitation {
-  margin: 4px 0; font-size: clamp(2rem, 9vw, 2.8rem); font-weight: 800; letter-spacing: .06em;
-  border-top: 2px solid var(--filet-fort); border-bottom: 1px solid var(--filet); padding: 10px 0; user-select: all;
-}
-.admin h3 { margin: 24px 0 0; font-size: 1.05rem; }
-.liste-passkeys { list-style: none; margin: 8px 0 0; padding: 0; border-top: 2px solid var(--filet-fort); }
-.liste-passkeys li { display: flex; gap: 12px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--filet); }
-.liste-passkeys li > div { flex: 1 1 220px; min-width: 0; }
-.liste-passkeys p { margin: 0; overflow-wrap: anywhere; }
-.liste-passkeys li.revoquee { color: var(--discret); }
-.liste-passkeys li.revoquee .initiale { border-color: var(--filet); }
-.liste-passkeys .bouton { flex: none; }
-@media (max-width: 560px) {
-  .liste-passkeys li { flex-wrap: wrap; align-items: flex-start; }
-  .liste-passkeys li > div { flex-basis: calc(100% - 52px); }
-  .liste-passkeys .bouton { margin-left: 52px; }
-}
-
 /* ---------- Avis : ligne compacte sous le départ ---------- */
 .avis-bloc { display: flex; flex-wrap: wrap; align-items: center; gap: 0 14px; margin-top: 2px; }
 .avis-bloc .lien { text-align: left; }

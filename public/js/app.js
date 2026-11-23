@@ -12,7 +12,7 @@ const etat = {
   donnees: null,
   index: new Map(),
   choix: null,
-  moi: lireLocal("qc-moi", null),
+  moi: null, // code de la personne connectée (lu dans /api/session, posé par auth.lo2k.net)
   criteres: { ...CRITERES_VIDES, saison: true },
   cible: null, // repas à remplacer depuis le tiroir de recherche
   route: "",
@@ -23,12 +23,10 @@ const etat = {
   coursesRangees: new Set(), // ids des lignes rangées dans « Déjà cochées » (propre à l'appareil)
   coursesRangeesPeriode: null,
   appareil: null, // { id, nom, statut, mode, autorise }
-  session: null, // { personne, admin, passkey, nom } quand une passkey a ouvert une session
+  session: null, // { personne, admin } : identité posée par auth.lo2k.net
   avis: null, // avis de la famille sur la période courante (format quick-cooking/avis)
   avisCible: null, // repas dont le tiroir d'avis est ouvert
   avisModifie: false, // saisie du tiroir d'avis pas encore enregistrée
-  admin: null, // liste des passkeys (administration)
-  invitation: null, // dernier code d'invitation créé { code, expire }
 };
 
 // ---------- Stockage local (préférences de l'appareil, jamais indispensable) ----------
@@ -69,7 +67,7 @@ async function api(chemin, options = {}) {
     headers: { "Content-Type": "application/json", "X-Appareil": CLE_APPAREIL, ...(options.headers || {}) },
   });
   const corps = await rep.json().catch(() => ({}));
-  if (!rep.ok) throw new Error(corps.erreur || `Erreur ${rep.status}`);
+  if (!rep.ok) throw Object.assign(new Error(corps.erreur || `Erreur ${rep.status}`), { statut: rep.status });
   return corps;
 }
 
@@ -111,7 +109,6 @@ const ICONES = {
   alerte: '<path d="M12 3l9.5 17h-19z"/><path d="M12 10v4.5M12 17.5v.01"/>',
   info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5.5M12 7.5v.01"/>',
   ok: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
-  cle: '<circle cx="8" cy="15" r="4.5"/><path d="M11.2 11.8L20 3M16 7l3 3M13.5 9.5l2.5 2.5"/>',
 };
 const icone = (nom) =>
   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONES[nom]}</svg>`;
@@ -239,18 +236,11 @@ const dateLongue = (iso) =>
 // ---------- En-tête : qui suis-je ----------
 function rendreMoi() {
   const s = etat.session;
-  // Connecté par passkey : l'identité est celle de la clé, on ne la bascule plus à la main.
-  if (s) {
-    $("#moi").innerHTML = `<span class="moi-libelle">Je suis</span><a class="moi-session" href="#/moi" aria-label="${esc(nomDe(s.personne))}, connecté par passkey : mon identité"${
-      etat.route === "moi" ? ' aria-current="page"' : ""}><span class="nom-court" aria-hidden="true">${esc(s.personne)}</span><span class="nom-long" aria-hidden="true">${esc(nomDe(s.personne))}</span></a>`;
-    return;
-  }
-  $("#moi").innerHTML =
-    `<span class="moi-libelle">Je suis</span>` +
-    personnes()
-      .map((p) => `<button type="button" data-action="moi" data-code="${esc(p.code)}" aria-pressed="${etat.moi === p.code}" aria-label="${esc(p.nom)}"><span class="nom-court" aria-hidden="true">${esc(p.code)}</span><span class="nom-long" aria-hidden="true">${esc(p.nom)}</span></button>`)
-      .join("") +
-    `<a class="moi-cle" href="#/moi" aria-label="Me connecter avec une passkey"${etat.route === "moi" ? ' aria-current="page"' : ""}>${icone("cle")}</a>`;
+  // L'identité vient d'auth.lo2k.net : on la montre, on ne la bascule plus à la main.
+  $("#moi").innerHTML = s
+    ? `<span class="moi-libelle">Je suis</span><a class="moi-session" href="#/moi" aria-label="${esc(nomDe(s.personne))} : mon identité"${
+      etat.route === "moi" ? ' aria-current="page"' : ""}><span class="nom-court" aria-hidden="true">${esc(s.personne)}</span><span class="nom-long" aria-hidden="true">${esc(nomDe(s.personne))}</span></a>`
+    : "";
 }
 
 function rendreCompteur() {
@@ -377,7 +367,7 @@ function origineDonnees() {
   const a = etat.appareil;
   return `<p class="pied discret">Menus mis à jour le ${esc(dateLongue(d.genere_le))} · ${d.recettes.length} recettes dans la base${
     d.source?.includes("exemple") ? " · <b>données d'exemple</b>" : ""}</p>
-    ${a ? `<p class="pied appareil"><a class="lien" href="#/moi">${etat.session ? `Connecté : ${esc(nomDe(etat.session.personne))}` : "Me connecter"} · cet appareil${a.nom ? ` (${esc(a.nom)})` : ""}</a></p>` : ""}`;
+    ${a ? `<p class="pied appareil"><a class="lien" href="#/moi">${etat.session ? `Connecté : ${esc(nomDe(etat.session.personne))}` : "Mon identité"} · cet appareil${a.nom ? ` (${esc(a.nom)})` : ""}</a></p>` : ""}`;
 }
 
 function formulaireAppareil(a) {
@@ -1186,60 +1176,16 @@ function rafraichirTiroir() {
   if (etat.cible) ouvrirTiroir(etat.cible);
 }
 
-// ---------- Identité : passkeys ----------
-// Le navigateur donne la clé publique en SPKI (getPublicKey) : le serveur n'a pas de CBOR à décoder.
-const versB64 = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-const deB64 = (s) => Uint8Array.from(atob(s.replace(/-/g, "+").replace(/_/g, "/") + "=".repeat((4 - (s.length % 4)) % 4)), (c) => c.charCodeAt(0));
-const passkeysPossibles = () =>
-  Boolean(window.PublicKeyCredential && navigator.credentials?.create && window.AuthenticatorAttestationResponse?.prototype.getPublicKey);
-
-/** Message lisible pour une erreur du geste passkey. */
-function raisonPasskey(e) {
-  if (e?.name === "NotAllowedError") return "Geste annulé ou délai dépassé. Rien n'a été enregistré : réessayez.";
-  if (e?.name === "InvalidStateError") return "Ce téléphone a déjà une passkey pour ce site.";
-  if (e?.name === "SecurityError") return "Ce site ne peut pas créer de passkey ici (adresse non sécurisée).";
-  return e instanceof TypeError ? "Pas de connexion au site. Vérifiez le réseau, puis réessayez." : e?.message || "Erreur inconnue.";
-}
-
+// ---------- Identité : auth.lo2k.net ----------
+// La connexion, les appareils et les droits se gèrent sur auth.lo2k.net ; ici on lit seulement qui est connecté.
 function ouvrirSession(s) {
   etat.session = s?.personne ? s : null;
-  etat.moi = etat.session ? etat.session.personne : lireLocal("qc-moi", null);
-  etat.admin = null;
+  etat.moi = etat.session ? etat.session.personne : null;
 }
 
-async function seConnecter() {
-  const o = await api("/api/passkeys/connexion/options", { method: "POST", body: "{}" });
-  const cred = await navigator.credentials.get({
-    publicKey: { challenge: deB64(o.challenge), rpId: o.rpId, userVerification: o.userVerification, timeout: o.timeout, allowCredentials: [] },
-  });
-  const r = cred.response;
-  ouvrirSession(await api("/api/passkeys/connexion", {
-    method: "POST",
-    body: JSON.stringify({ id: cred.id, clientDataJSON: versB64(r.clientDataJSON), authenticatorData: versB64(r.authenticatorData), signature: versB64(r.signature) }),
-  }));
-}
-
-async function creerPasskey({ personne, code, nom }) {
-  const o = await api("/api/passkeys/creation/options", { method: "POST", body: JSON.stringify({ personne, code, nom }) });
-  const cred = await navigator.credentials.create({ publicKey: { ...o, challenge: deB64(o.challenge), user: { ...o.user, id: deB64(o.user.id) } } });
-  const r = cred.response;
-  ouvrirSession(await api("/api/passkeys/creation", {
-    method: "POST",
-    body: JSON.stringify({
-      id: cred.id, clientDataJSON: versB64(r.clientDataJSON), authenticatorData: versB64(r.getAuthenticatorData()),
-      publicKey: versB64(r.getPublicKey()), publicKeyAlgorithm: r.getPublicKeyAlgorithm(),
-    }),
-  }));
-}
-
-/** Nom proposé pour l'appareil : « iPhone · Safari ». */
-function nomAppareilParDefaut() {
-  if (etat.appareil?.nom) return etat.appareil.nom;
-  const ua = navigator.userAgent;
-  const os = /iPhone/.test(ua) ? "iPhone" : /iPad/.test(ua) ? "iPad" : /Android/.test(ua) ? "Android" : /Windows/.test(ua) ? "Windows" : /Mac OS/.test(ua) ? "Mac" : "Appareil";
-  const nav = /Edg\//.test(ua) ? "Edge" : /Firefox\//.test(ua) ? "Firefox" : /Chrome\//.test(ua) ? "Chrome" : /Safari\//.test(ua) ? "Safari" : "";
-  return [os, nav].filter(Boolean).join(" · ");
-}
+/** Adresse d'auth.lo2k.net déduite de l'hôte courant (quick-cooking.lo2k.net -> auth.lo2k.net). */
+const hoteAuth = () => `auth.${location.hostname.split(".").slice(1).join(".") || "lo2k.net"}`;
+const urlAuth = (chemin) => `https://${hoteAuth()}${chemin}`;
 
 const initiale = (code) => `<span class="initiale" aria-hidden="true">${esc(code)}</span>`;
 
@@ -1247,73 +1193,27 @@ function vueMoi() {
   const s = etat.session;
   const a = etat.appareil;
   const appareil = a ? `<section class="etat-ligne" aria-labelledby="t-appareil"><h2 id="t-appareil">Cet appareil</h2>${formulaireAppareil(a)}</section>` : "";
-  if (s) {
-    if (s.admin && etat.admin === null) chargerAdmin();
-    return `<header class="tete-page"><h1>Mon identité</h1></header>
-      <div class="identite">
-        <section class="etat-ligne" aria-labelledby="t-qui"><h2 id="t-qui" class="visuellement-cache">Connecté</h2>
-          <p class="identite-qui">${initiale(s.personne)}<span><b>${esc(nomDe(s.personne))}</b><span class="discret">Connecté avec la passkey « ${esc(s.nom)} »</span></span></p>
-          <p>Tes avis sur les plats portent ton nom. Les cases de courses et les choix aussi.</p>
-          <button type="button" class="bouton secondaire" data-action="deconnexion">Me déconnecter</button>
-        </section>
-        ${s.admin ? vueAdmin() : ""}
-        ${appareil}
-      </div>`;
-  }
-  const possible = passkeysPossibles();
-  return `<header class="tete-page"><h1>Mon identité</h1>
-      <p class="note">Une passkey relie ce téléphone à ta personne : empreinte, visage ou code du téléphone, aucun mot de passe. Le site ne garde qu'une clé publique.</p></header>
+  if (!s) return vueConnexionRequise();
+  return `<header class="tete-page"><h1>Mon identité</h1></header>
     <div class="identite">
-      ${possible ? `<section class="etat-ligne" aria-labelledby="t-cx"><h2 id="t-cx">J'ai déjà une passkey</h2>
-          <button type="button" class="bouton" data-action="connexion">Me connecter</button></section>
-        <section class="etat-ligne" aria-labelledby="t-creer"><h2 id="t-creer">Créer une passkey sur ce téléphone</h2>
-          <p class="discret">Il faut un code d'invitation, à demander à Jérôme. Il sert une seule fois.</p>
-          <form class="form-passkey" data-action="creer-passkey" novalidate>
-            <label class="champ"><span>Qui je suis</span>
-              <select name="personne" required><option value="" selected disabled>Choisir…</option>${personnes().map((p) => `<option value="${esc(p.code)}">${esc(p.nom)}</option>`).join("")}</select></label>
-            <label class="champ"><span>Code d'invitation</span>
-              <input type="text" name="code" required autocomplete="one-time-code" autocapitalize="characters" spellcheck="false" maxlength="12" placeholder="XXXX-XXXX"></label>
-            <label class="champ"><span>Nom de ce téléphone</span>
-              <input type="text" name="nom" maxlength="60" value="${esc(nomAppareilParDefaut())}"></label>
-            <p class="form-erreur niv-attention" role="alert" hidden></p>
-            <button type="submit" class="bouton">Créer ma passkey</button>
-          </form></section>`
-        : `<p class="bandeau niv-info">Ce navigateur ne permet pas de créer ni d'utiliser une passkey. Le site reste lisible ; pour donner un avis, ouvrez-le sur un téléphone récent (Safari, Chrome ou Firefox à jour).</p>`}
+      <section class="etat-ligne" aria-labelledby="t-qui"><h2 id="t-qui" class="visuellement-cache">Connecté</h2>
+        <p class="identite-qui">${initiale(s.personne)}<span><b>${esc(nomDe(s.personne))}</b><span class="discret">Connecté avec auth.lo2k.net</span></span></p>
+        <p>Tes avis sur les plats portent ton nom. Les cases de courses aussi.</p>
+        <div class="repas-actions">
+          <a class="bouton secondaire" href="${esc(urlAuth("/connexion"))}">Mes appareils et me déconnecter</a>
+          ${s.admin ? `<a class="bouton secondaire" href="${esc(urlAuth("/admin"))}">Administration</a>` : ""}
+        </div>
+      </section>
       ${appareil}
     </div>`;
 }
 
-async function chargerAdmin() {
-  etat.admin = "chargement";
-  try {
-    etat.admin = (await api("/api/passkeys")).passkeys;
-  } catch (e) {
-    etat.admin = { erreur: e.message };
-  }
-  if (etat.route === "moi") rafraichir();
-}
-
-function vueAdmin() {
-  const inv = etat.invitation;
-  const liste = etat.admin;
-  const lignes = Array.isArray(liste)
-    ? `<ul class="liste-passkeys">${[...liste].reverse().map((p) => `<li class="${p.revoquee_le ? "revoquee" : ""}">
-        ${initiale(p.personne)}
-        <div><p class="pk-nom"><b>${esc(nomDe(p.personne))}</b> · ${esc(p.nom)}${p.id === etat.session.passkey ? ` <span class="badge">ce téléphone</span>` : ""}</p>
-          <p class="discret petit">Créée le ${esc(dateLongue(p.cree_le))} · dernier usage ${esc(dateLongue(p.vu_le))}${p.revoquee_le ? ` · <b>révoquée</b> le ${esc(dateLongue(p.revoquee_le))}` : ""}</p></div>
-        ${p.revoquee_le ? "" : `<button type="button" class="bouton secondaire" data-action="revoquer" data-id="${esc(p.id)}">Révoquer</button>`}</li>`).join("")}</ul>`
-    : liste?.erreur ? `<p class="bandeau niv-attention">Liste indisponible : ${esc(liste.erreur)}</p>` : `<p class="discret">Chargement des passkeys…</p>`;
-  return `<section class="etat-ligne admin" aria-labelledby="t-admin"><h2 id="t-admin">Administration</h2>
-      <div class="invitation">
-        ${inv ? `<p class="code-invitation"><span class="visuellement-cache">Code d'invitation : </span>${esc(inv.code)}</p>
-          <p class="discret">Valable une seule fois, jusqu'au ${esc(dateLongue(inv.expire))}. Il ne sera plus affiché après avoir quitté cette page.</p>` : ""}
-        <div class="repas-actions">
-          <button type="button" class="bouton" data-action="inviter">Créer un code d'invitation</button>
-          ${inv ? `<button type="button" class="bouton secondaire" data-action="copier-code">Copier le code</button>` : ""}
-        </div>
-      </div>
-      <h3>Passkeys</h3>${lignes}
-    </section>`;
+/** Affichée quand le serveur répond 401 : la session d'auth.lo2k.net manque ou a expiré. Aucune redirection automatique. */
+function vueConnexionRequise() {
+  const retour = encodeURIComponent(location.origin + "/");
+  return `<section class="tableau"><h2 class="tableau-moment">Connexion requise</h2>
+    <p class="tableau-vide">Ta session a expiré ou ce téléphone n'est pas encore connecté.</p>
+    <div class="tableau-actions"><a class="bouton signal" href="${esc(urlAuth(`/connexion?rd=${retour}`))}">Me connecter</a></div></section>`;
 }
 
 // Fenêtre de confirmation : remplace window.confirm, dans le style du site.
@@ -1326,24 +1226,6 @@ function confirmer(titre, texte, ok) {
   d.showModal();
   $("#confirmer-non").focus();
   return new Promise((resolve) => d.addEventListener("close", () => resolve(d.returnValue === "oui"), { once: true }));
-}
-
-async function revoquerPasskey(id) {
-  const p = etat.admin.find((x) => x.id === id);
-  const derniere = p.personne === etat.session.personne && etat.admin.filter((x) => x.personne === p.personne && !x.revoquee_le).length === 1;
-  const texte = `${nomDe(p.personne)} ne pourra plus donner d'avis depuis cet appareil. ` +
-    (derniere ? "C'est ta dernière passkey : tu perdras l'accès à l'administration, et il faudra un nouveau code créé avec le jeton IMPORT_TOKEN."
-      : p.id === etat.session.passkey ? "C'est la passkey de ce téléphone : tu seras déconnecté." : "La passkey reste dans la liste, marquée « révoquée ».");
-  if (!(await confirmer(`Révoquer « ${p.nom} » ?`, texte, "Révoquer"))) return;
-  try {
-    await api(`/api/passkeys/${encodeURIComponent(id)}`, { method: "DELETE" });
-    toast("Passkey révoquée");
-    if (id === etat.session.passkey) ouvrirSession(await api("/api/session"));
-    else etat.admin = null;
-  } catch (e) {
-    toast(`Non révoquée : ${e.message}`, "interdit");
-  }
-  rafraichir();
 }
 
 // ---------- Avis sur les plats ----------
@@ -1406,10 +1288,9 @@ function ouvrirAvis(repasId) {
   const autres = avisTries(repasId).filter(([c]) => c !== moi);
   etat.avisCible = repasId;
   etat.avisModifie = false;
-  const connexion = `<section class="avis-connexion niv-info" aria-labelledby="t-avis-cx"><h3 id="t-avis-cx">Pour donner ton avis, connecte ce téléphone</h3>
-      <p>Ton avis portera ton nom : il faut une passkey (empreinte, visage ou code du téléphone).</p>
-      <div class="repas-actions">${passkeysPossibles() ? `<button type="button" class="bouton" data-action="connexion" data-puis="avis">Me connecter</button>` : ""}
-        <a class="lien" href="#/moi">Créer une passkey</a></div></section>`;
+  const connexion = `<section class="avis-connexion niv-info" aria-labelledby="t-avis-cx"><h3 id="t-avis-cx">Connexion requise</h3>
+      <p>Ton avis porte ton nom : il faut être connecté avec auth.lo2k.net.</p>
+      <div class="repas-actions"><a class="bouton" href="${esc(urlAuth(`/connexion?rd=${encodeURIComponent(location.href)}`))}">Me connecter</a></div></section>`;
   $("#avis-corps").innerHTML = `<div class="fenetre-tete"><div class="fiche-titre">${pastille(r.numero, "grande")}<div><h2 id="avis-titre">${esc(r.plat.nom ?? "Plat")}</h2>
         <p class="avis-quand">${esc(j?.label ?? "")} ${esc(LIBELLE_MOMENT[r.moment].toLowerCase())}</p></div></div>
       <button type="button" class="fermer" data-action="fermer-avis" aria-label="Fermer">${icone("fermer")}</button></div>
@@ -1544,11 +1425,7 @@ document.addEventListener("click", (ev) => {
     if (el.closest("#tiroir-corps")) rafraichirTiroir();
     else rafraichir();
   }
-  else if (action === "moi") {
-    etat.moi = etat.moi === el.dataset.code ? null : el.dataset.code;
-    ecrireLocal("qc-moi", etat.moi);
-    rafraichir();
-  } else if (action === "choisir") {
+  else if (action === "choisir") {
     // Retoucher l'option déjà choisie ne la retire pas : « Annuler le choix » est là pour ça.
     const actuel = etat.choix.repas[repas];
     const deja = actuel?.ref === ref && (actuel.origine === "reste") === (el.dataset.origine === "reste");
@@ -1566,46 +1443,7 @@ document.addEventListener("click", (ev) => {
   else if (action === "avis") ouvrirAvis(repas);
   else if (action === "fermer-avis") fermerAvis();
   else if (action === "retirer-avis") retirerAvis();
-  else if (action === "connexion") actionConnexion(el);
-  else if (action === "deconnexion") deconnexion();
-  else if (action === "inviter") inviter();
-  else if (action === "copier-code") {
-    navigator.clipboard?.writeText(etat.invitation.code).then(() => toast("Code copié"), () => toast("Copie impossible : recopiez le code à la main.", "attention"));
-  } else if (action === "revoquer") revoquerPasskey(el.dataset.id);
 });
-
-async function actionConnexion(el) {
-  el.disabled = true;
-  try {
-    await seConnecter();
-    toast(`Connecté : ${nomDe(etat.session.personne)}`);
-    rafraichir();
-    if (el.dataset.puis === "avis" && etat.avisCible && $("#avis").open) ouvrirAvis(etat.avisCible);
-  } catch (e) {
-    toast(raisonPasskey(e), "attention");
-    el.disabled = false;
-  }
-}
-
-async function deconnexion() {
-  try {
-    ouvrirSession(await api("/api/session", { method: "DELETE" }));
-    toast("Déconnecté");
-  } catch (e) {
-    toast(`Déconnexion impossible : ${raisonReseau(e)}`, "interdit");
-  }
-  rafraichir();
-}
-
-async function inviter() {
-  try {
-    etat.invitation = await api("/api/invitations", { method: "POST", body: "{}" });
-    rafraichir();
-    $(".code-invitation")?.scrollIntoView({ block: "center" });
-  } catch (e) {
-    toast(`Code non créé : ${raisonReseau(e)}`, "interdit");
-  }
-}
 
 // Saisie du tiroir d'avis : note qu'elle a changé, met à jour compteur, aide et bouton.
 for (const type of ["input", "change"])
@@ -1626,28 +1464,6 @@ document.addEventListener("submit", async (ev) => {
   if (f.id === "form-avis") {
     ev.preventDefault();
     if (f.verdict.value) enregistrerAvis(f);
-    return;
-  }
-  if (f.dataset.action === "creer-passkey") {
-    ev.preventDefault();
-    const erreur = $(".form-erreur", f);
-    const manque = !f.personne.value ? "Choisis qui tu es." : !f.code.value.trim() ? "Saisis le code d'invitation donné par Jérôme." : "";
-    erreur.textContent = manque;
-    erreur.hidden = !manque;
-    if (manque) return (!f.personne.value ? f.personne : f.code).focus();
-    const bouton = $("button[type=submit]", f);
-    bouton.disabled = true;
-    bouton.textContent = "Création…";
-    try {
-      await creerPasskey({ personne: f.personne.value, code: f.code.value, nom: f.nom.value });
-      toast(`Passkey créée : bienvenue ${nomDe(etat.session.personne)}`);
-      rafraichir();
-    } catch (e) {
-      erreur.textContent = raisonPasskey(e);
-      erreur.hidden = false;
-      bouton.disabled = false;
-      bouton.textContent = "Créer ma passkey";
-    }
     return;
   }
   if (f.dataset.action !== "nommer-appareil") return;
@@ -1674,9 +1490,8 @@ $("#avis").addEventListener("cancel", (ev) => {
 });
 $("#avis").addEventListener("close", () => (etat.avisCible = null));
 window.addEventListener("hashchange", () => {
-  // Lien « Créer une passkey » depuis le tiroir : on quitte le tiroir pour la page demandée.
+  // Lien depuis le tiroir : on quitte le tiroir pour la page demandée.
   if ($("#avis").open) $("#avis").close();
-  if (etat.route === "moi") etat.invitation = null; // le code ne se réaffiche pas
   rafraichir();
 });
 
@@ -1733,7 +1548,7 @@ new ResizeObserver(([e]) => document.documentElement.style.setProperty("--dock-h
 // ---------- Démarrage ----------
 (async function demarrer() {
   try {
-    const [appareil, session] = await Promise.all([api("/api/appareil"), api("/api/session").catch(() => null)]);
+    const [appareil, session] = await Promise.all([api("/api/appareil"), api("/api/session")]);
     etat.appareil = appareil;
     ouvrirSession(session);
     if (!etat.appareil.autorise) {
@@ -1745,6 +1560,10 @@ new ResizeObserver(([e]) => document.documentElement.style.setProperty("--dock-h
     await Promise.all([chargerChoix(), chargerCourses(), chargerAvis()]);
     rafraichir({ defiler: true });
   } catch (e) {
+    if (e.statut === 401) {
+      vue.innerHTML = vueConnexionRequise();
+      return;
+    }
     vue.innerHTML = `<section class="tableau"><h2 class="tableau-moment">Menus indisponibles</h2>
       <p class="tableau-vide">Le site n'a pas pu charger les menus (${esc(e.message)}).</p>
       <p>Vérifiez la connexion, puis réessayez.</p>

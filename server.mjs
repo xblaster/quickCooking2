@@ -1,5 +1,5 @@
 // Serveur HTTP de Quick Cooking : fichiers statiques de public/ + API JSON. Aucune dépendance.
-import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
+import { createHash, timingSafeEqual } from "node:crypto";
 import { readdir, readFile } from "node:fs/promises";
 import http from "node:http";
 import path from "node:path";
@@ -8,20 +8,17 @@ import { gzipSync } from "node:zlib";
 import { avertissementsExport, ETIQUETTES, ID_RE, refsIntrouvables, SECTIONS, validerAvis, validerExport, validerMajPeriode, validerMajRepas, VERDICTS } from "./lib/contrat.mjs";
 import { indexRecettes, resteVeille } from "./public/js/regles.js";
 import { changerStatut, identifier, lister, MODE, peutUtiliser, renommer, STATUTS } from "./lib/appareils.mjs";
-import {
-  ALGORITHMES, connecter, consommerDefi, creerInvitation, emettreDefi, enregistrerPasskey, essaiAutorise, fermerSession, invitationUtilisable,
-  listerPasskeys, passkey, revoquer, RP_ID, RP_ORIGIN, session, SESSION_MS, verifierAssertion, verifierClientData, verifierCreation,
-} from "./lib/passkeys.mjs";
 import { DATA_DIR, ecrireExport, lireAvis, lireChoix, lireCourses, lireExport, modifierAvis, modifierChoix, modifierCourses, modifierExport } from "./lib/stockage.mjs";
 
 const argPort = process.argv.indexOf("--port");
 const PORT = Number(argPort > 0 ? process.argv[argPort + 1] : process.env.PORT || 80);
 const PUBLIC = path.join(path.dirname(fileURLToPath(import.meta.url)), "public");
-// Jeton d'administration : dépôt de l'export et autorisation des appareils.
+// Jeton d'administration : dépôt de l'export, lectures de « batch cooking » et autorisation des appareils.
 const IMPORT_TOKEN = process.env.IMPORT_TOKEN || "";
+// Origine du site : les écritures venues d'un autre site du domaine (cookie d'auth partagé) sont refusées.
+const SITE_ORIGIN = (process.env.SITE_ORIGIN || "https://quick-cooking.lo2k.net").replace(/\/+$/, "");
 const LIMITE_EXPORT = 20 * 1024 * 1024;
 const LIMITE_CHOIX = 16 * 1024;
-const LIMITE_PASSKEY = 32 * 1024;
 
 const TYPES = {
   ".html": "text/html; charset=utf-8",
@@ -49,23 +46,18 @@ function envoyer(res, statut, corps, entetes = {}) {
 const json = (res, statut, objet, entetes = {}) =>
   envoyer(res, statut, JSON.stringify(objet), { "Content-Type": TYPES[".json"], "Cache-Control": "no-store", ...entetes });
 
-// ---------- Session (cookie de la passkey) ----------
-const COOKIE = "qc_session";
-const SECURE = !/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(RP_ORIGIN);
-const attributsCookie = `HttpOnly; SameSite=Strict; Path=/${SECURE ? "; Secure" : ""}`;
-const cookieSession = (jeton) => ({ "Set-Cookie": `${COOKIE}=${jeton}; Max-Age=${SESSION_MS / 1000}; ${attributsCookie}` });
-const COOKIE_EFFACE = { "Set-Cookie": `${COOKIE}=; Max-Age=0; ${attributsCookie}` };
-
-function jetonSession(req) {
-  for (const morceau of (req.headers.cookie || "").split(";")) {
-    const i = morceau.indexOf("=");
-    if (i > 0 && morceau.slice(0, i).trim() === COOKIE) return morceau.slice(i + 1).trim();
-  }
-  return null;
+// ---------- Identité : posée par ingress-nginx après la décision d'auth.lo2k.net ----------
+// X-Auth-Personne (code de la personne) et X-Auth-Admin sont remplacés par nginx à chaque requête.
+// Ils ne sont fiables que parce que la NetworkPolicy n'admet que ingress-nginx : ne JAMAIS les lire sur les
+// routes machine (/api/export*), exemptées de la décision d'auth, où un client peut les forger.
+const PERSONNE_RE = /^[A-Z][A-Za-z0-9]{0,7}$/;
+function identite(req) {
+  const personne = req.headers["x-auth-personne"];
+  if (typeof personne !== "string" || !PERSONNE_RE.test(personne)) return null;
+  return { personne, admin: req.headers["x-auth-admin"] === "1" };
 }
 
-const adresse = (req) => req.headers["cf-connecting-ip"] || (req.headers["x-forwarded-for"] || "").split(",")[0].trim() || req.socket.remoteAddress;
-// Écritures authentifiées par cookie : JSON exigé (avec SameSite=Strict, ferme la porte aux formulaires d'autres sites).
+// Écritures : JSON exigé (ferme la porte aux formulaires d'autres sites).
 const corpsJson = (req) => req.method === "GET" || /^application\/json\b/i.test(req.headers["content-type"] || "");
 const reponseAvis = (a) => ({ ...a, verdicts: Object.fromEntries(VERDICTS), etiquettes: Object.fromEntries(ETIQUETTES) });
 
@@ -140,7 +132,17 @@ async function periodeAVenir(id) {
 }
 
 async function api(req, res, url) {
-  const m = url.pathname.match(/^\/api\/(.+)$/)[1].split("/").map(decodeURIComponent);
+  let m = url.pathname.match(/^\/api\/(.+)$/)[1].split("/").map(decodeURIComponent);
+  // Lectures de « batch cooking » : alias en lecture seule des routes du site, sous le préfixe exempté de la
+  // décision d'auth (/api/export). Le jeton seul compte : les en-têtes X-Auth-* ne sont pas lus ici.
+  let machine = false;
+  if (m[0] === "export" && ["choix", "avis"].includes(m[1])) {
+    if (req.method !== "GET") return json(res, 404, { erreur: "Route inconnue (lecture seule)." });
+    if (!IMPORT_TOKEN) return json(res, 403, { erreur: "Lecture désactivée : IMPORT_TOKEN non configuré." });
+    if (!estAdmin(req)) return json(res, 401, { erreur: "Jeton invalide." });
+    m = m.slice(1);
+    machine = true;
+  }
 
   // ---------- Envoi des données par « batch cooking » (jeton IMPORT_TOKEN) ----------
   if (m[0] === "export") {
@@ -212,78 +214,19 @@ async function api(req, res, url) {
     }
   }
 
-  // ---------- Identité : passkeys, session, invitations (ouvertes même en mode « autorises ») ----------
-  if (["session", "passkeys", "invitations"].includes(m[0])) {
-    if (!corpsJson(req)) return json(res, 415, { erreur: "Content-Type: application/json attendu." });
-    const jeton = jetonSession(req);
-    const s = await session(jeton);
-    const refusAdmin = () => json(res, s ? 403 : 401, { erreur: "Droit d'administration requis." });
-
-    if (m[0] === "session" && m.length === 1) {
-      if (req.method === "GET") return s ? json(res, 200, s, cookieSession(jeton)) : json(res, 200, { personne: null, admin: false });
-      if (req.method === "DELETE") {
-        await fermerSession(jeton);
-        return json(res, 200, { personne: null, admin: false }, COOKIE_EFFACE);
-      }
+  // ---------- Porte d'identité : tout le reste de l'API est réservé aux personnes autorisées par auth.lo2k.net ----------
+  const qui = machine ? null : identite(req);
+  if (!machine) {
+    if (!qui) return json(res, 401, { erreur: "Connexion requise : passez par https://auth.lo2k.net." });
+    if (!["GET", "HEAD"].includes(req.method)) {
+      if (!corpsJson(req)) return json(res, 415, { erreur: "Content-Type: application/json attendu." });
+      const origine = req.headers.origin;
+      if (origine && origine !== SITE_ORIGIN) return json(res, 403, { erreur: "Origine refusée." });
     }
-
-    if (m[0] === "invitations" && m.length === 1 && req.method === "POST") {
-      if (!s?.admin && !estAdmin(req)) return refusAdmin();
-      return json(res, 200, await creerInvitation(s?.admin ? s.personne : "jeton"));
-    }
-
-    if (m[0] === "passkeys") {
-      if (m[1] === "creation" && m[2] === "options" && m.length === 3 && req.method === "POST") {
-        if (!essaiAutorise(adresse(req))) return json(res, 429, { erreur: "Trop d'essais : réessayez dans une minute." });
-        const corps = await lireCorps(req, LIMITE_CHOIX);
-        const p = ((await lireExport()).donnees.foyer?.personnes || []).find((x) => x.code === corps?.personne);
-        if (!p) return json(res, 400, { erreur: "Personne inconnue du foyer." });
-        if (!(await invitationUtilisable(corps.code))) return json(res, 400, { erreur: "Code d'invitation invalide ou expiré" });
-        const nom = (typeof corps.nom === "string" ? corps.nom.trim().slice(0, 60) : "") || "Appareil sans nom";
-        const challenge = emettreDefi("creation", { code: corps.code, personne: p.code, nom });
-        return json(res, 200, {
-          challenge, rp: { id: RP_ID, name: "Quick Cooking" },
-          user: { id: randomBytes(16).toString("base64url"), name: `${p.nom} · Quick Cooking`, displayName: p.nom },
-          pubKeyCredParams: ALGORITHMES.map((alg) => ({ type: "public-key", alg })),
-          authenticatorSelection: { residentKey: "required", requireResidentKey: true, userVerification: "required" },
-          attestation: "none", timeout: 300000,
-        });
-      }
-      if (m[1] === "creation" && m.length === 2 && req.method === "POST") {
-        const rep = await lireCorps(req, LIMITE_PASSKEY);
-        const { challenge } = verifierClientData(rep?.clientDataJSON, "webauthn.create");
-        const d = consommerDefi(challenge, "creation");
-        if (!d) return json(res, 400, { erreur: "Demande expirée : recommencez." });
-        const nouveau = await enregistrerPasskey({ ...d, verif: verifierCreation(rep, challenge) });
-        console.log(`passkey créée pour ${d.personne} (${d.nom})`);
-        return json(res, 200, await session(nouveau), cookieSession(nouveau));
-      }
-      if (m[1] === "connexion" && m[2] === "options" && m.length === 3 && req.method === "POST")
-        return json(res, 200, { challenge: emettreDefi("connexion"), rpId: RP_ID, userVerification: "required", timeout: 300000, allowCredentials: [] });
-      if (m[1] === "connexion" && m.length === 2 && req.method === "POST") {
-        const rep = await lireCorps(req, LIMITE_PASSKEY);
-        const { challenge } = verifierClientData(rep?.clientDataJSON, "webauthn.get");
-        if (!consommerDefi(challenge, "connexion")) return json(res, 400, { erreur: "Demande expirée : recommencez." });
-        const pk = await passkey(rep.id);
-        if (!pk || pk.revoquee_le) return json(res, 401, { erreur: "Passkey inconnue ou révoquée." });
-        const nouveau = await connecter(rep.id, verifierAssertion(rep, pk, challenge));
-        return json(res, 200, await session(nouveau), cookieSession(nouveau));
-      }
-      // Administration
-      if (m.length === 1 && req.method === "GET") {
-        if (!s?.admin && !estAdmin(req)) return refusAdmin();
-        return json(res, 200, { passkeys: await listerPasskeys() });
-      }
-      if (m.length === 2 && req.method === "DELETE") {
-        if (!s?.admin && !estAdmin(req)) return refusAdmin();
-        const r = await revoquer(m[1]);
-        if (!r) return json(res, 404, { erreur: "Passkey inconnue." });
-        console.log(`passkey révoquée : ${r.personne} (${r.nom})`);
-        return json(res, 200, r);
-      }
-    }
-    return json(res, 404, { erreur: "Route inconnue." });
   }
+
+  // Qui suis-je : lu dans les en-têtes, aucun cookie n'est émis ni lu ici.
+  if (m[0] === "session" && m.length === 1 && req.method === "GET") return json(res, 200, { personne: qui.personne, admin: qui.admin });
 
   const appareil = await identifier(req);
 
@@ -298,8 +241,8 @@ async function api(req, res, url) {
     return json(res, 200, { id: appareil.id, nom: appareil.nom, statut: appareil.statut, mode: MODE, autorise: peutUtiliser(appareil) });
   }
 
-  // « batch cooking » lit les choix avec son jeton d'administration, sans clé d'appareil.
-  if (!peutUtiliser(appareil) && !estAdmin(req))
+  // « batch cooking » lit les choix et les avis par /api/export/… (jeton), sans clé d'appareil.
+  if (!machine && !peutUtiliser(appareil))
     return json(res, 403, { erreur: "Cet appareil attend d'être autorisé.", appareil: appareil?.id ?? null });
 
   if (m[0] === "donnees" && m.length === 1 && req.method === "GET") return servirDonnees(req, res);
@@ -314,7 +257,7 @@ async function api(req, res, url) {
       if (!idsCourses(periode).has(m[2])) return json(res, 404, { erreur: "Ligne de courses inconnue." });
       const corps = await lireCorps(req, LIMITE_CHOIX);
       if (typeof corps?.coche !== "boolean") return json(res, 400, { erreur: "coche : true ou false." });
-      const par = ["J", "P", "G"].includes(corps.par) ? corps.par : null;
+      const par = qui?.personne ?? null; // la personne vient de l'identité, jamais du corps
       return json(res, 200, await modifierCourses(periode.id, (c) => {
         if (corps.coche) c.coches[m[2]] = { par, appareil: appareil?.id ?? null, le: new Date().toISOString() };
         else delete c.coches[m[2]];
@@ -331,9 +274,8 @@ async function api(req, res, url) {
       return json(res, 200, reponseAvis(await lireAvis(id)));
     }
     if (m.length === 3 && (req.method === "PUT" || req.method === "DELETE")) {
-      if (!corpsJson(req)) return json(res, 415, { erreur: "Content-Type: application/json attendu." });
-      const s = await session(jetonSession(req));
-      if (!s) return json(res, 401, { erreur: "Connectez-vous avec votre passkey pour donner un avis." });
+      const s = qui;
+      if (!s) return json(res, 401, { erreur: "Connexion requise : passez par https://auth.lo2k.net pour donner un avis." });
       if (!courante || m[1] !== courante.id) return json(res, 409, { erreur: "Cette période n'est plus en cours : ses avis sont figés." });
       const r = courante.repas.find((x) => x.id === m[2]);
       if (!r || !(r.plat?.ref || r.plat?.nom)) return json(res, 404, { erreur: "Repas inconnu ou sans plat." });
@@ -460,7 +402,7 @@ const serveur = http.createServer(async (req, res) => {
 serveur.listen(PORT, "0.0.0.0", async () => {
   const exp = await lireExport().catch((e) => ({ origine: `ERREUR ${e.message}` }));
   console.log(`Quick Cooking sur :${PORT} — données ${DATA_DIR} — export : ${exp.origine}` +
-    ` — appareils : ${MODE} — passkeys : ${RP_ORIGIN}${IMPORT_TOKEN ? " — administration active" : ""}`);
+    ` — appareils : ${MODE} — identité : en-têtes X-Auth-* d'auth.lo2k.net${IMPORT_TOKEN ? " — administration active" : ""}`);
 });
 
 for (const sig of ["SIGTERM", "SIGINT"]) process.on(sig, () => serveur.close(() => process.exit(0)));

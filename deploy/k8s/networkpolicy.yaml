@@ -1,0 +1,24 @@
+# Les en-têtes X-Auth-Personne / X-Auth-Admin ne sont fiables que si aucun autre pod ne peut joindre le serveur
+# (change adopter-auth-lo2k) : seul ingress-nginx (namespace default) est admis en entrée. Sortie non restreinte.
+# Les sondes du kubelet (readiness/liveness) et les sauvegardes (kubectl exec) ne passent pas par cette règle.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: quick-cooking-restrictive
+  namespace: quick-cooking
+spec:
+  podSelector:
+    matchLabels:
+      app: quick-cooking
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: default
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: ingress-nginx
+      ports:
+        - port: 80
+          protocol: TCP
