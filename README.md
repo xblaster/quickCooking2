@@ -129,7 +129,8 @@ L'Ingress `quick-cooking-machine` exempte `/api/export` (exact) et `/api/export/
 ces routes n'acceptent que `Authorization: Bearer $IMPORT_TOKEN` et **ne lisent jamais les en-têtes
 d'identité** (un client pourrait les forger). Les lectures de batch cooking y vivent aussi :
 `GET /api/export/choix[/<période>]` et `GET /api/export/avis[/<période>]` (anciens `GET /api/choix` et
-`GET /api/avis`, désormais réservés au site). Voir
+`GET /api/avis`, désormais réservés au site). L'écriture d'un repas y est aussi : `PUT /api/export/choix/<période>/repas/<repasId>`
+(jeton seul, même validation que le site, `{ "ref": null }` vide la case ; l'entrée porte `via: "batch-cooking"`). Voir
 [`docs/donnees-entree-batch-cooking.md`](docs/donnees-entree-batch-cooking.md).
 
 ### Tester en local

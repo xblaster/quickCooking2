@@ -133,11 +133,13 @@ async function periodeAVenir(id) {
 
 async function api(req, res, url) {
   let m = url.pathname.match(/^\/api\/(.+)$/)[1].split("/").map(decodeURIComponent);
-  // Lectures de « batch cooking » : alias en lecture seule des routes du site, sous le préfixe exempté de la
-  // décision d'auth (/api/export). Le jeton seul compte : les en-têtes X-Auth-* ne sont pas lus ici.
+  // « Batch cooking » : alias des routes du site sous le préfixe exempté de la décision d'auth (/api/export).
+  // Lecture des choix et des avis, plus l'écriture d'UN repas (corriger ou vider une case) :
+  // PUT /api/export/choix/<période>/repas/<repasId>. Le jeton seul compte : les en-têtes X-Auth-* ne sont pas lus ici.
   let machine = false;
   if (m[0] === "export" && ["choix", "avis"].includes(m[1])) {
-    if (req.method !== "GET") return json(res, 404, { erreur: "Route inconnue (lecture seule)." });
+    const ecritureRepas = req.method === "PUT" && m[1] === "choix" && m.length === 5 && m[3] === "repas";
+    if (req.method !== "GET" && !ecritureRepas) return json(res, 404, { erreur: "Route inconnue (lecture, ou PUT choix/<période>/repas/<id>)." });
     if (!IMPORT_TOKEN) return json(res, 403, { erreur: "Lecture désactivée : IMPORT_TOKEN non configuré." });
     if (!estAdmin(req)) return json(res, 401, { erreur: "Jeton invalide." });
     m = m.slice(1);
@@ -337,7 +339,8 @@ async function api(req, res, url) {
         }
         const v = validerMajRepas(corps, def, new Set(index.keys()));
         if (v.erreur) return (erreur = v.erreur), false;
-        c.repas[def.id] = { ...v.valeur, appareil: appareil?.id ?? null, le: new Date().toISOString() };
+        // Écrit par la machine (jeton) : aucun appareil, marque « via » ; une écriture du site remplace l'entrée entière.
+        c.repas[def.id] = { ...v.valeur, appareil: machine ? null : appareil?.id ?? null, ...(machine ? { via: "batch-cooking" } : {}), le: new Date().toISOString() };
         c.export_genere_le = genereLe;
         suivreRestes(c, ctx);
       });

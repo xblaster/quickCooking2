@@ -54,7 +54,8 @@ Base : `https://quick-cooking.lo2k.net` (en local : `http://localhost:3000`).
 Authentification : en-tête `Authorization: Bearer <IMPORT_TOKEN>` sur toutes les routes ci-dessous.
 Ces routes sont toutes sous `/api/export` : c'est le seul préfixe exempté de la connexion `auth.lo2k.net`. Les routes du site
 (`/api/choix`, `/api/avis`, `/api/courses`…) exigent une personne connectée et **ne reconnaissent pas le jeton** ; les anciennes
-lectures `GET /api/choix` et `GET /api/avis` doivent devenir `GET /api/export/choix` et `GET /api/export/avis`.
+lectures `GET /api/choix` et `GET /api/avis` doivent devenir `GET /api/export/choix` et `GET /api/export/avis`, et l'écriture
+`PUT /api/choix/<période>/repas/<repas>` devient `PUT /api/export/choix/<période>/repas/<repas>`.
 Le jeton est un secret : lis-le dans une variable d'environnement (`QUICK_COOKING_IMPORT_TOKEN`),
 ne l'écris jamais dans un fichier du dépôt.
 
@@ -66,6 +67,7 @@ ne l'écris jamais dans un fichier du dépôt.
 | GET | `/api/export/etat` | — | ce qui est en place : dates, nombre de recettes et d'articles, ids des périodes, avancement des choix, avertissements |
 | GET | `/api/export/choix` | — | choix de la famille pour la période à venir en place (§5) |
 | GET | `/api/export/choix/<id période>` | — | idem pour une période donnée |
+| PUT | `/api/export/choix/<id période>/repas/<id repas>` | `{ ref, origine?, portion?, commentaire?, par? }` ; `{ "ref": null }` **vide la case** | `200` choix complet de la période ; `400` recette inconnue, repas imposé, portion invalide ; `404` période ou repas inconnu ; `409` période close. Même validation que le site ; l'entrée porte `via: "batch-cooking"` et aucun appareil (une écriture du site la remplace). Sert à vider les cases pré-remplies après un nouvel envoi de `periode_a_venir`, ou à reporter un choix dicté par la famille (`par`) |
 | GET | `/api/export/avis` | — | avis de la famille sur les plats de la période courante (§5 bis) |
 | GET | `/api/export/avis/<id période>` | — | idem pour une période passée, même sortie de l'export |
 | GET | `/schema/export-v1.json` | — | schéma JSON (draft 2020-12) de l'export, sans authentification |

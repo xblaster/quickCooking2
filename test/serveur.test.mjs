@@ -319,3 +319,57 @@ test("routes machine : le jeton seul compte, jamais les en-têtes d'identité", 
   assert.equal((await fetch(`${base}/api/choix`, { headers: ADMIN })).status, 401);
   assert.equal((await fetch(`${base}/api/avis`, { headers: ADMIN })).status, 401);
 });
+
+test("écriture machine d'un repas : PUT /api/export/choix/<période>/repas/<id> (jeton seul)", async () => {
+  const p = exemple.periode_a_venir;
+  const libre = p.repas.find((r) => !r.impose);
+  const impose = p.repas.find((r) => r.impose);
+  const ref = libre.options[2].ref;
+  const url = (id = libre.id, periode = p.id) => `${base}/api/export/choix/${periode}/repas/${id}`;
+  const machine = (u, corps, entetes = ADMIN, methode = "PUT") =>
+    fetch(u, { method: methode, headers: { "Content-Type": "application/json", ...entetes }, body: JSON.stringify(corps) });
+
+  // Corriger un choix : validé comme sur le site, marqué « via », sans appareil, `par` reporté
+  const ok = await machine(url(), { ref, origine: "option", portion: 1.25, par: "G" });
+  assert.equal(ok.status, 200);
+  const r = (await ok.json()).repas[libre.id];
+  assert.deepEqual([r.ref, r.origine, r.portion, r.par, r.via, r.appareil], [ref, "option", 1.25, "G", "batch-cooking", null]);
+  assert.equal((await (await fetch(`${base}/api/export/choix`, { headers: ADMIN })).json()).repas[libre.id].via, "batch-cooking");
+
+  // Vider une case : remise à zéro
+  const vide = (await (await machine(url(), { ref: null })).json()).repas[libre.id];
+  assert.deepEqual([vide.ref, vide.origine, vide.par], [null, null, null]);
+
+  // Le jeton seul compte : en-têtes d'identité forgés sans jeton, ou faux jeton
+  const forge = { "X-Auth-Personne": "J", "X-Auth-Admin": "1" };
+  assert.equal((await machine(url(), { ref }, forge)).status, 401);
+  assert.equal((await machine(url(), { ref }, { Authorization: "Bearer faux", ...forge })).status, 401);
+
+  // Même validation que le site
+  assert.equal((await machine(url(), { ref: "inconnue" })).status, 400);
+  assert.equal((await machine(url(), { ref, portion: 3 })).status, 400);
+  assert.equal((await machine(url(impose.id), { ref })).status, 400, "repas imposé");
+  assert.equal((await machine(url("inexistant"), { ref })).status, 404);
+  assert.equal((await machine(url(libre.id, "autre"), { ref })).status, 404);
+
+  // Les autres écritures sous l'alias restent fermées
+  assert.equal((await machine(`${base}/api/export/choix/${p.id}`, { statut: "termine" })).status, 404);
+  assert.equal((await machine(`${base}/api/export/avis/${p.id}/repas/x`, { verdict: "bien" })).status, 404);
+  assert.equal((await machine(url(), {}, ADMIN, "DELETE")).status, 404);
+  assert.equal((await machine(url(), {}, ADMIN, "POST")).status, 404);
+
+  // Période close : 409
+  assert.equal((await put("/api/export/periode_a_venir", { ...p, statut: "close" }, ADMIN)).status, 200);
+  try {
+    assert.equal((await machine(url(), { ref })).status, 409);
+  } finally {
+    assert.equal((await put("/api/export/periode_a_venir", p, ADMIN)).status, 200);
+  }
+
+  // Une écriture du site reprend la main : plus de « via »
+  await machine(url(), { ref, origine: "option", par: "G" });
+  assert.equal((await put(`/api/choix/${p.id}/repas/${libre.id}`, { ref, origine: "option", par: "P" })).status, 200);
+  const site = (await (await fetch2(`/api/choix/${p.id}`)).json()).repas[libre.id];
+  assert.equal(site.via, undefined);
+  assert.equal(site.par, "P");
+});
