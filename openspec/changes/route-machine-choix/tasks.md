@@ -13,7 +13,7 @@
 
 - [x] 3.1 Construire et pousser `xblaster/quick-cooking:<AAAAMMJJ-sha7>`, tester en conteneur local ; vérifier `PUT /api/export/choix/…` 200 avec jeton et 401 sans
 - [x] 3.2 Mettre le tag dans `deploy/k8s/deployment.yaml` et l'IaC du repo infra, `kubectl apply --dry-run=server` ; vérifier l'acceptation
-- [ ] 3.3 Déployer (validation de Jérôme, coupure `Recreate` de quelques secondes) ; vérifier `/healthz` et un `PUT` machine réel
+- [x] 3.3 Déployé le 2026-11-23 (`20261123-de0509c`, coupure `Recreate` d environ 16 s) ; 401, 404, 409 vérifiés en réel, `vider_choix` → 409 sur la période terminée
 
 ## Workflow follow-up
 
